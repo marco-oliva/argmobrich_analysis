@@ -1,0 +1,16 @@
+*.tsv
+*.fasta
+*.fastq
+*.fna
+*.fai
+*.sam
+*.bam
+*.bai
+*.png
+*.svg
+*.out
+*.error
+*.log
+*.pbs
+*.xls
+*.xlsx

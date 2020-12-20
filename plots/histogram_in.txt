@@ -1,0 +1,6 @@
+bovine_2.5kb,../deduplication/deduplicated_sequel-demultiplex.1896_A01.ccs.fastq
+bovine_5kb,../deduplication/deduplicated_sequel-demultiplex.1896_B01.ccs.fastq
+bovine_8kb,../deduplication/deduplicated_sequel-demultiplex.1896_C01.ccs.fastq
+mock_2.5kb,../deduplication/deduplicated_sequel-demultiplex.MOCK_D01.ccs.fastq
+mock_5kb,../deduplication/deduplicated_sequel-demultiplex.MOCK_E01.ccs.fastq
+mock_8kb,../deduplication/deduplicated_sequel-demultiplex.MOCK_F01.ccs.fastq

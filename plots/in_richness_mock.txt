@@ -1,0 +1,4 @@
+mock_comparative_richness
+mock_2.5kb,../datasheets/tmp/MOCK_D01_megares_mapped_reads.sam
+mock_5kb,../datasheets/tmp/MOCK_E01_megares_mapped_reads.sam
+mock_8kb,../datasheets/tmp/MOCK_F01_megares_mapped_reads.sam

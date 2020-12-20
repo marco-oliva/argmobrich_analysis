@@ -1,0 +1,6 @@
+../datasheets/tmp/A01_megares_mapped_reads.sam
+../datasheets/tmp/B01_megares_mapped_reads.sam
+../datasheets/tmp/C01_megares_mapped_reads.sam
+../datasheets/tmp/MOCK_D01_megares_mapped_reads.sam
+../datasheets/tmp/MOCK_E01_megares_mapped_reads.sam
+../datasheets/tmp/MOCK_F01_megares_mapped_reads.sam

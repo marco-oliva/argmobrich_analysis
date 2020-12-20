@@ -1,0 +1,8 @@
+../datasheets/tmp/A01_mobilome.sam
+../datasheets/tmp/B01_mobilome.sam
+../datasheets/tmp/C01_mobilome.sam
+../datasheets/tmp/MOCK_D01_mobilome.sam
+../datasheets/tmp/MOCK_E01_mobilome.sam
+../datasheets/tmp/MOCK_F01_mobilome.sam
+../datasheets/loman_tmp/ERR3152366_1_mobilome.sam
+../datasheets/loman_tmp/ERR3152367_1_mobilome.sam

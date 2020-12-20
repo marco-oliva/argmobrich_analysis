@@ -1,0 +1,4 @@
+bovine_comparative_richness
+bovine_2.5kb,../datasheets/tmp/A01_megares_mapped_reads.sam
+bovine_5kb,../datasheets/tmp/B01_megares_mapped_reads.sam
+bovine_8kb,../datasheets/tmp/C01_megares_mapped_reads.sam
