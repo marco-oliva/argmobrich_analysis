@@ -1,0 +1,18 @@
+{
+	"base_path" : "/home/noyes046/moliva/projects/argmobrich/analysis/coverage/references/ZymoBIOMICS.STD.refseq.v2/Genomes",
+	"extension" : ".fasta",
+	"organisms_list" : 
+		[
+			"Bacillus_subtilis_complete_genome",
+            "Cryptococcus_neoformans_draft_genome",
+            "Enterococcus_faecalis_complete_genome",
+            "Escherichia_coli_complete_genome",
+            "Lactobacillus_fermentum_complete_genome",
+            "Listeria_monocytogenes_complete_genome",
+            "Pseudomonas_aeruginosa_complete_genome",
+            "Saccharomyces_cerevisiae_draft_genome",
+            "Salmonella_enterica_complete_genome",
+            "Staphylococcus_aureus_complete_genome"
+		]
+}
+
