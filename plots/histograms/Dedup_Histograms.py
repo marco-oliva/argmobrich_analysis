@@ -1,8 +1,6 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[3]:
-
 
 ## Imports
 import sys
@@ -16,9 +14,6 @@ import itertools
 import matplotlib.pyplot as plt
 import glob
 import seaborn as sns
-
-
-# In[12]:
 
 
 def gen_histogram_not_log(tsv_file_path, name):
@@ -65,9 +60,6 @@ def gen_histogram(tsv_file_path, name):
     plt.show() 
 
 
-# In[13]:
-
-
 for tsv in glob.glob('./*MOCK*.tsv'):
     name = ''
     if 'D' in tsv:
@@ -91,16 +83,6 @@ for tsv in glob.glob('./*1896*.tsv'):
     else:
         name = 'Somthing went wrong'
     gen_histogram(tsv, name)
-
-
-# In[ ]:
-
-
-
-
-
-# In[ ]:
-
 
 
 
