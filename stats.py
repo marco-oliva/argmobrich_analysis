@@ -1,9 +1,6 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[4]:
-
-
 # Imports
 import sys
 anaconda_path = '/home/noyes046/moliva/miniconda3/envs/argmobrich_3.7/lib/python3.7/site-packages'
@@ -15,20 +12,12 @@ from Bio import SeqIO
 import numpy as np
 
 
-# In[3]:
-
-
 databases = {
     'ACLAME'   : '/home/noyes046/shared/databases/aclame/aclame_genes_all_0.4.fasta',
     'ICEBERG'  : '/home/noyes046/shared/databases/ice_berg/ICEberg_seq.fasta',
     'PLASMIDS' : '/home/noyes046/shared/databases/plasmid_finder/plasmids_combined.fsa'
 }
 
-
-# In[14]:
-
-
-# For each database print median, min and max length 
 print('db_name, min_length, max_length, median_length, number_of_sequences')
 for db_name, db_path in databases.items():
     lengths_list = []
@@ -37,10 +26,6 @@ for db_name, db_path in databases.items():
             lengths_list.append(len(record.seq))
     lengths_array = np.array(lengths_list)
     print('{},{},{},{},{}'.format(db_name, np.min(lengths_array), np.max(lengths_array), np.median(lengths_array), lengths_array.size))
-
-
-# In[ ]:
-
 
 
 

@@ -1,9 +1,6 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[1]:
-
-
 import sys
 anaconda_path = '/home/noyes046/moliva/miniconda3/envs/argmobrich_3.7/lib/python3.7/site-packages'
 if anaconda_path not in sys.path:
@@ -16,18 +13,11 @@ import itertools
 import csv
 import os
 
-
-# In[2]:
-
-
 #Get megares lengths for coverage
 megares_gene_lengths = {}
 megares_reference_fasta_filename = "/home/noyes046/shared/databases/megares_v1.01/megares_database_v1.01.fasta"
 for rec in SeqIO.parse(megares_reference_fasta_filename, "fasta"):
     megares_gene_lengths[rec.name] = len(rec.seq)
-
-
-# In[3]:
 
 
 # Read megares ontology
@@ -72,10 +62,6 @@ with open(ontology_filename, 'r') as ontology_tsv:
                                      "group"        : group
                                    }
 
-
-# In[4]:
-
-
 # Samples
 base_path = '/panfs/roc/groups/11/noyes046/moliva/projects/argmobrich/analysis/tmp/heatmaps/megares'
 samples_names = { 
@@ -92,9 +78,6 @@ samples_names = {
 sam_files = []
 for sample_name, _ in samples_names.items():
     sam_files.append(pysam.AlignmentFile('{}/{}_ato_megares.sam'.format(base_path, sample_name), 'r'))
-
-
-# In[5]:
 
 
 for sam_file in sam_files:
@@ -121,10 +104,6 @@ for sam_file in sam_files:
 
     sam_file.close()
 
-
-# In[6]:
-
-
 represented_hierarchy = {}
 for cl in class_samples:
     if len(class_samples[cl]) > 0:
@@ -132,9 +111,6 @@ for cl in class_samples:
         for mech in hierarchy_dict[cl]:
             if len(mech_samples[mech]) > 0:
                 represented_hierarchy[cl][mech] = []
-
-
-# In[7]:
 
 
 bovine_sample_names = [samples_names['A01'], samples_names['B01'], samples_names['C01']]
@@ -166,12 +142,6 @@ for cl in represented_hierarchy:
         left += 1
 
 num_mechs = len(mech_names)
-
-#Just want 2 colors for presence/absence
-color_scheme = [[0.0, 'rgb(198, 198, 198)'], 
-                [0.5, 'rgb(198, 198, 198)'],
-                [0.5, 'rgb(194, 59, 34)'],
-                [1.0, 'rgb(194, 59, 34)']]
 
 label_heatmap_matrix = []
 i = 1
@@ -218,9 +188,6 @@ for cl in represented_hierarchy:
     j+=1
 
 
-# In[20]:
-
-
 import numpy as np
 import seaborn as sns
 import matplotlib.pyplot as plt
@@ -261,9 +228,6 @@ plt.yticks(mechtick_vals, mechtick_text, color='black')
 plt.tick_params(axis='y', labelleft=False, labelright=True, left=False, right=True, labelsize=15)
 plt.gcf().subplots_adjust(bottom=0.15, left=0.15, right=0.75)
 plt.savefig('heatmap_megares.svg')
-
-
-# In[ ]:
 
 
 

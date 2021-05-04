@@ -25,9 +25,6 @@ from pathlib import Path
 import csv
 
 
-# In[102]:
-
-
 # Get mapped and unmapped sets
 
 def unmapped_mapped(sam_file_path):
@@ -77,17 +74,11 @@ def generate_csv(unmapped, mapped, name):
         mapped_out_file.write(read + ',')
         mapped_out_file.write(str(length) + '\n')
 
-
-# In[108]:
-
-
 file_path = '/panfs/roc/groups/11/noyes046/jsettle/argmobrich/analysis/datasheets/tmp/C01_megares_align.sam'
 unmapped, mapped = unmapped_mapped(file_path)
 generate_csv(unmapped, mapped, file_path[-21:-4])
 plot_histograms(unmapped, mapped, file_path[-21:-4])
 
-
-# In[ ]:
 
 
 
