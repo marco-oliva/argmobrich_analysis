@@ -14,3 +14,4 @@
 *.pbs
 *.xls
 *.xlsx
+__init__.py
