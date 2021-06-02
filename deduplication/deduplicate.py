@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 import csv
 import os
 import sys
+import gzip
 
 if __name__ == "__main__":
     fastq_with_dups = sys.argv[1]
@@ -88,7 +89,7 @@ if __name__ == "__main__":
             num_singletons += 1
             dedup_records.append(record)
 
-    with open("deduplicated_" + os.path.splitext(os.path.basename(fastq_with_dups))[0] + ".fastq", 'w') as out_handle:
+    with gzip.open("deduplicated_" + os.path.splitext(os.path.basename(fastq_with_dups))[0] + ".fastq.gz", 'w') as out_handle:
         SeqIO.write(dedup_records, out_handle, "fastq")
 
     #Plot histogram
@@ -97,6 +98,6 @@ if __name__ == "__main__":
     ax.set_xlabel("Set size (number of reads)")
     ax.set_ylabel("Frequency")
     bin_tuple = ax.hist(set_sizes, bins=75)
-    plt.savefig("deduplicated_" + os.path.splitext(os.path.basename(fastq_with_dups))[0] + ".png")
+    plt.savefig("deduplicated_" + os.path.splitext(os.path.basename(fastq_with_dups))[0] + ".svg")
 
 
