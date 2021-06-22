@@ -72,22 +72,23 @@ if __name__ == "__main__":
     dedup_records = []
     set_sizes = []
     num_singletons = 0
-    for record in SeqIO.parse(fastq_with_dups, "fastq"):
-        record_in_set = False
-        for dup_set in frozen_sets:
-            if record.id in dup_set:
-                record_in_set = True
-                curr_record_set = dup_set
-                break
+    with gzip.open(fastq_with_dups, "rt") as fastq_with_dups_handle:
+        for record in SeqIO.parse(fastq_with_dups, "fastq"):
+            record_in_set = False
+            for dup_set in frozen_sets:
+                if record.id in dup_set:
+                    record_in_set = True
+                    curr_record_set = dup_set
+                    break
 
-        if record_in_set:
-            if not set_deduplicated[curr_record_set]:
+            if record_in_set:
+                if not set_deduplicated[curr_record_set]:
+                    dedup_records.append(record)
+                    set_sizes.append(len(curr_record_set))
+                    set_deduplicated[curr_record_set] = True
+            else: #Singletons are not in the set csv
+                num_singletons += 1
                 dedup_records.append(record)
-                set_sizes.append(len(curr_record_set))
-                set_deduplicated[curr_record_set] = True
-        else: #Singletons are not in the set csv
-            num_singletons += 1
-            dedup_records.append(record)
 
     with gzip.open("deduplicated_" + os.path.splitext(os.path.basename(fastq_with_dups))[0] + ".fastq.gz", 'w') as out_handle:
         SeqIO.write(dedup_records, out_handle, "fastq")
