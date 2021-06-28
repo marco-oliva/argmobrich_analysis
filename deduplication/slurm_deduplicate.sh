@@ -5,10 +5,10 @@
 #SBATCH --mail-user=marco.oliva@ufl.edu
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=1
-#SBATCH --mem-per-cpu=8gb
-#SBATCH --time=144:00:00
+#SBATCH --mem-per-cpu=16gb
+#SBATCH --time=288:00:00
 #SBATCH --output=dedup_%A-%a.out    # Standard output and error log
-#SBATCH --array=1-97                 # Array range
+#SBATCH --array=1-6                 # Array range
 
 ##----------------------------------------------------------
 # Print Some statistics
@@ -24,11 +24,14 @@ PROFILER="/usr/bin/time --verbose"
 module load python
 module load blat
 
-file_list=(${READS_DIR}/*.fastq.gz)
+#file_list=(${READS_DIR}/*.fastq.gz)
+mapfile -t file_list < /blue/boucher/marco.oliva/projects/remote/argmobrich_analysis/deduplication/missed_files.txt
+
 
 # Dedup on read file
 FILE_NUM=$(( $SLURM_ARRAY_TASK_ID - 1 ))
 filename=${file_list[${FILE_NUM}]}
+echo "Working on ${FILE_NUM}: ${filename}"
 base_name=$(basename ${filename} .fastq.gz)
 
 out_dir="${OUT_DIR_BASE}/${base_name}"

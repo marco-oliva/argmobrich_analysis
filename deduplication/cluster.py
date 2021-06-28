@@ -71,7 +71,10 @@ if __name__ == '__main__':
 
     X = np.array(read_lengths[0])
 
-    num_clusters = 200
+    num_clusters = 600
+    if (len(read_lengths) < num_clusters):
+        num_clusters = int(len(read_lengths) / 10)
+
     kmeans = KMeans(n_clusters=num_clusters).fit(X.reshape((X.shape[0],1)))
 
     fasta_files = list()
@@ -99,7 +102,7 @@ if __name__ == '__main__':
 
     # find duplicates
     tsv_name = output_dir + '/pls_files/duplicates.tsv'
-    for i in range(0, 200):
+    for i in range(0, num_clusters):
         duplication_sets = []  # container of sets, where each set represents a clique of CCS that closely align
         # each alignment in psl: if qualifications met, those two belong to the same set
         cur_pls_file = pls_files[i]

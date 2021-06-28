@@ -18,7 +18,7 @@ pwd; hostname; date
 # Setup
 READS_DIR="/blue/boucher/marco.oliva/data/Noyes_Project_026/Reads"
 SCRIPT="/blue/boucher/marco.oliva/projects/remote/argmobrich_analysis/deduplication/deduplicate.py"
-OUT_DIR_BASE="/blue/boucher/marco.oliva/data/Noyes_Project_026/Reads/Deduplicated"
+OUT_DIR_BASE="/blue/boucher/marco.oliva/data/Noyes_Project_026/Reads/Deduplicated/Tmp"
 PROFILER="/usr/bin/time --verbose"
 
 module load python
@@ -27,8 +27,11 @@ file_list=(${READS_DIR}/*.fastq.gz)
 
 # Dedup on read file
 FILE_NUM=$(( $SLURM_ARRAY_TASK_ID - 1 ))
-filename=${file_list[${FILE_NUM}]}
-base_name=$(basename ${filename} .fastq.gz)
+file_name=${file_list[${FILE_NUM}]}
+base_name=$(basename ${file_name} .fastq.gz)
 
 tsv_file="${OUT_DIR_BASE}/${base_name}/pls_files/duplicates.tsv"
-python ${SCRIPT} "${READS_DIR}/${filename}" ${tsv_file}
+if [ ! -f /blue/boucher/marco.oliva/data/Noyes_Project_026/Reads/Deduplicated/deduplicated_${base_name}.fastq.gz ]; then
+    echo "Running on /blue/boucher/marco.oliva/data/Noyes_Project_026/Reads/Deduplicated/deduplicated_${base_name}.fastq.gz"
+    python ${SCRIPT} "${file_name}" ${tsv_file}
+fi

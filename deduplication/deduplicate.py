@@ -73,7 +73,7 @@ if __name__ == "__main__":
     set_sizes = []
     num_singletons = 0
     with gzip.open(fastq_with_dups, "rt") as fastq_with_dups_handle:
-        for record in SeqIO.parse(fastq_with_dups, "fastq"):
+        for record in SeqIO.parse(fastq_with_dups_handle, "fastq"):
             record_in_set = False
             for dup_set in frozen_sets:
                 if record.id in dup_set:
@@ -90,15 +90,16 @@ if __name__ == "__main__":
                 num_singletons += 1
                 dedup_records.append(record)
 
-    with gzip.open("deduplicated_" + os.path.splitext(os.path.basename(fastq_with_dups))[0] + ".fastq.gz", 'w') as out_handle:
+    with gzip.open("deduplicated_" + os.path.splitext(os.path.basename(fastq_with_dups))[0] + ".gz", 'wt') as out_handle:
         SeqIO.write(dedup_records, out_handle, "fastq")
 
     #Plot histogram
-    fig, ax = plt.subplots(tight_layout=True)
-    ax.set_title("deduplicated_" + os.path.splitext(os.path.basename(fastq_with_dups))[0] + " (singletons: " + str(num_singletons) + ")")
-    ax.set_xlabel("Set size (number of reads)")
-    ax.set_ylabel("Frequency")
-    bin_tuple = ax.hist(set_sizes, bins=75)
-    plt.savefig("deduplicated_" + os.path.splitext(os.path.basename(fastq_with_dups))[0] + ".svg")
+#    fig, ax = plt.subplots(tight_layout=True)
+#    ax.set_title("deduplicated_" + os.path.splitext(os.path.basename(fastq_with_dups))[0] + " (singletons: " + str(num_singletons) + ")")
+#    ax.set_xlabel("Set size (number of reads)")
+#    ax.set_ylabel("Frequency")
+#    bin_tuple = ax.hist(set_sizes, bins=75)
+#    plt.savefig("deduplicated_" + os.path.splitext(os.path.basename(fastq_with_dups))[0] + ".svg")
+
 
 
