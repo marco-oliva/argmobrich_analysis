@@ -73,7 +73,8 @@ if __name__ == '__main__':
 
     num_clusters = 600
     if (len(read_lengths) < num_clusters):
-        num_clusters = int(len(read_lengths) / 10)
+        num_clusters = int(len(read_lengths[0]) / 10)
+    print("Num of cluster used: {}".format(num_clusters))
 
     kmeans = KMeans(n_clusters=num_clusters).fit(X.reshape((X.shape[0],1)))
 
