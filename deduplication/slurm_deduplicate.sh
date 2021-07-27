@@ -5,10 +5,10 @@
 #SBATCH --mail-user=marco.oliva@ufl.edu
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=1
-#SBATCH --mem-per-cpu=16gb
+#SBATCH --mem-per-cpu=32gb 
 #SBATCH --time=288:00:00
 #SBATCH --output=dedup_%A-%a.out    # Standard output and error log
-#SBATCH --array=1-6                 # Array range
+#SBATCH --array=1-2                 # Array range
 
 ##----------------------------------------------------------
 # Print Some statistics

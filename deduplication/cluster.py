@@ -71,8 +71,8 @@ if __name__ == '__main__':
 
     X = np.array(read_lengths[0])
 
-    num_clusters = 600
-    if (len(read_lengths) < num_clusters):
+    num_clusters = 4000
+    if (len(read_lengths[0]) < num_clusters):
         num_clusters = int(len(read_lengths[0]) / 10)
     print("Num of cluster used: {}".format(num_clusters))
 
