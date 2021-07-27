@@ -32,7 +32,7 @@ file_name=${file_list[${FILE_NUM}]}
 base_name=$(basename ${file_name} .fastq.gz)
 
 tsv_file="${OUT_DIR_BASE}/${base_name}/pls_files/duplicates.tsv"
-if [ ! -f /blue/boucher/marco.oliva/data/Noyes_Project_026/Reads/Deduplicated/deduplicated_${base_name}.fastq.gz ]; then
+if [ ! -f "/blue/boucher/marco.oliva/data/Noyes_Project_026/Reads/Deduplicated/deduplicated_${base_name}.fastq.gz" ]; then
     echo "Running on /blue/boucher/marco.oliva/data/Noyes_Project_026/Reads/Deduplicated/deduplicated_${base_name}.fastq.gz"
-    python ${SCRIPT} "${file_name}" ${tsv_file}
+    python ${SCRIPT} -r "${file_name}" -d ${tsv_file} > "/blue/boucher/marco.oliva/data/Noyes_Project_026/Reads/Deduplicated/deduplicated_${base_name}.fastq.gz"
 fi

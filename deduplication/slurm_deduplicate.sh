@@ -4,7 +4,7 @@
 #SBATCH --mail-type=END,FAIL
 #SBATCH --mail-user=marco.oliva@ufl.edu
 #SBATCH --ntasks=1
-#SBATCH --cpus-per-task=32
+#SBATCH --cpus-per-task=64
 #SBATCH --mem-per-cpu=100gb
 #SBATCH --time=288:00:00
 #SBATCH --output=dedup_%A-%a.out    # Standard output and error log
@@ -20,6 +20,7 @@ READS_DIR="/blue/boucher/marco.oliva/data/Noyes_Project_026/Reads"
 SCRIPT="/blue/boucher/marco.oliva/projects/remote/argmobrich_analysis/deduplication/find_duplicates.py"
 OUT_DIR_BASE="/blue/boucher/marco.oliva/data/Noyes_Project_026/Reads/Deduplicated"
 PROFILER="/usr/bin/time --verbose"
+NUM_CLUSTERS="400"
 
 module load python
 module load blat
@@ -37,4 +38,4 @@ base_name=$(basename ${filename} .fastq.gz)
 out_dir="${OUT_DIR_BASE}/${base_name}"
 mkdir -p ${out_dir}
 
-python ${SCRIPT} ${filename} ${out_dir}
+python ${SCRIPT} -r ${filename} -o ${out_dir} -n ${NUM_CLUSTERS} -t 64
