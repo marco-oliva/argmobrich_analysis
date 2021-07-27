@@ -1,15 +1,18 @@
+import csv
+import gzip
+import argparse
+import sys
+
 from Bio import SeqIO
 
-import matplotlib.pyplot as plt
+def main():
+    parser = argparse.ArgumentParser(description='Cluster reads based on read length')
+    parser.add_argument('-r', help='Reads File (FASTA/FASTQ)', type=str, dest='reads_file', required=True)
+    parser.add_argument('-d', help='Csv with duplicates sets', type=str, dest='duplicates_file', required=True)
+    args = parser.parse_args()
 
-import csv
-import os
-import sys
-import gzip
-
-if __name__ == "__main__":
-    fastq_with_dups = sys.argv[1]
-    sets_csv = sys.argv[2]
+    fastq_with_dups = args.reads_file
+    sets_csv = args.duplicates_file
 
     sets = []
     with open(sets_csv, 'r') as sets_handle:
@@ -18,17 +21,14 @@ if __name__ == "__main__":
             curr_set_elements = []
             for read_id in row:
                 curr_set_elements.append(read_id)
-
-            #curr_set = frozenset(curr_set_elements)
             sets.append(set(curr_set_elements))
-            #set_deduplicated[curr_set] = False
 
-    #Sets are not disjoint :(
+    # Sets are not disjoint :(
     are_sets_disjoint = False
     itr = 0
-    while(not are_sets_disjoint):
-        print("iteration: " + str(itr))
-        print(len(sets))
+    while (not are_sets_disjoint):
+        # print("iteration: " + str(itr))
+        # print(len(sets))
         itr += 1
         are_sets_disjoint = True
         combined_sets = []
@@ -41,29 +41,28 @@ if __name__ == "__main__":
                 combined_set = sets[i]
                 used_set_indices[i] = True
             else:
-                #print("continue to next from " + str(i))
+                # print("continue to next from " + str(i))
                 continue
 
-            for j in range(i+1, len(sets)):
+            for j in range(i + 1, len(sets)):
                 if not used_set_indices[j]:
                     if not len(combined_set & sets[j]) == 0:
-                        #print("merging " + str(i) + ", " + str(j))
+                        # print("merging " + str(i) + ", " + str(j))
                         combined_set = combined_set | sets[j]
                         are_sets_disjoint = False
                         used_set_indices[j] = True
                 else:
                     continue
 
-            #print("appending: " + str(i))
+            # print("appending: " + str(i))
             combined_sets.append(combined_set)
 
-        print(len(combined_sets))
+        # print(len(combined_sets))
         sets = combined_sets
-                
 
     set_deduplicated = {}
     frozen_sets = []
-    print(len(sets))
+    # print(len(sets))
     for curr_set in sets:
         frozen_set = frozenset(curr_set)
         frozen_sets.append(frozen_set)
@@ -86,20 +85,12 @@ if __name__ == "__main__":
                     dedup_records.append(record)
                     set_sizes.append(len(curr_record_set))
                     set_deduplicated[curr_record_set] = True
-            else: #Singletons are not in the set csv
+            else:  # Singletons are not in the set csv
                 num_singletons += 1
                 dedup_records.append(record)
 
-    with gzip.open("deduplicated_" + os.path.splitext(os.path.basename(fastq_with_dups))[0] + ".gz", 'wt') as out_handle:
+    with sys.stdout as out_handle:
         SeqIO.write(dedup_records, out_handle, "fastq")
 
-    #Plot histogram
-#    fig, ax = plt.subplots(tight_layout=True)
-#    ax.set_title("deduplicated_" + os.path.splitext(os.path.basename(fastq_with_dups))[0] + " (singletons: " + str(num_singletons) + ")")
-#    ax.set_xlabel("Set size (number of reads)")
-#    ax.set_ylabel("Frequency")
-#    bin_tuple = ax.hist(set_sizes, bins=75)
-#    plt.savefig("deduplicated_" + os.path.splitext(os.path.basename(fastq_with_dups))[0] + ".svg")
-
-
-
+if __name__ == "__main__":
+    main()
