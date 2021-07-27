@@ -2,8 +2,6 @@ from Bio import SeqIO
 import pysam
 
 import csv
-import os.path
-import sys
 import argparse
 
 GLOBAL_MGE_THRESHOLD = 0.5
@@ -22,8 +20,6 @@ def main():
     parser.add_argument('-i', help='Iceberg alignment file', dest='iceberg_sam', required=True)
     parser.add_argument('-a', help='ACLAME alignment file', dest='aclame_sam', required=True)
     parser.add_argument('-o', help='Output file prefix', dest='out_prefix', required=True)
-
-
     args = parser.parse_args()
 
     # Get aclame, iceberg, and plasmid finder lengths for coverage

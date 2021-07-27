@@ -14,7 +14,6 @@ def main():
     parser = argparse.ArgumentParser(description='Compute resistome')
     parser.add_argument('-s', help='Alignment file', dest='sam_file', required=True)
     parser.add_argument('-o', help='Output Prefix', dest='out_prefix', required=True)
-
     args = parser.parse_args()
 
     # Get megares lengths for coverage
