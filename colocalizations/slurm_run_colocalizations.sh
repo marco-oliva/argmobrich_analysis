@@ -8,7 +8,7 @@
 #SBATCH --mem-per-cpu=8gb
 #SBATCH --time=288:00:00
 #SBATCH --output=fcoloc_%A-%a.out    # Standard output and error log
-#SBATCH --array=1-97                # Array range
+#SBATCH --array=1-16                # Array range
 
 ##----------------------------------------------------------
 # Print Some statistics
@@ -16,10 +16,10 @@ pwd; hostname; date
 
 ##----------------------------------------------------------
 # Setup
-READS_DIR="/blue/boucher/marco.oliva/data/Noyes_Project_026/Reads/Deduplicated"
-MGE_ALIGNMENTS_BASE_DIR="/blue/boucher/marco.oliva/data/Noyes_Project_026/data_analysis/mobilome/sam_files"
-ARG_ALIGNMENTS_BASE_DIR="/blue/boucher/marco.oliva/data/Noyes_Project_026/data_analysis/resistome/sam_files"
-OUT_DIR_BASE="/blue/boucher/marco.oliva/data/Noyes_Project_026/data_analysis/colocalizations"
+READS_DIR="/blue/boucher/marco.oliva/data/Noyes_Project_026_assemblies/Assemblies_Fasta"
+MGE_ALIGNMENTS_BASE_DIR="/blue/boucher/marco.oliva/data/Noyes_Project_026_assemblies/Assemblies_Fasta/mobilome/sam_files"
+ARG_ALIGNMENTS_BASE_DIR="/blue/boucher/marco.oliva/data/Noyes_Project_026_assemblies/Assemblies_Fasta/resistome/sam_files"
+OUT_DIR_BASE="/blue/boucher/marco.oliva/data/Noyes_Project_026_assemblies/Assemblies_Fasta/colocalizations"
 SCRIPT="/blue/boucher/marco.oliva/projects/remote/argmobrich_analysis/colocalizations/find_colocalizations.py"
 
 MGES_BASE="/blue/boucher/marco.oliva/data/MGE_DBs"
@@ -34,12 +34,12 @@ module load python
 module load samtools
 module load minimap
 
-file_list=(${READS_DIR}/*.fastq.gz)
+file_list=(${READS_DIR}/*.fasta.gz)
 
 # Working on i-th file
 FILE_NUM=$(( $SLURM_ARRAY_TASK_ID - 1 ))
 FILE_NAME=${file_list[${FILE_NUM}]}
-BASE_NAME=$(basename ${FILE_NAME} .fastq.gz)
+BASE_NAME=$(basename ${FILE_NAME} .fasta.gz)
 
 if [[ $BASE_NAME =~ "V2" ]]
 then
@@ -50,6 +50,7 @@ else
   SKIP_END=0
 fi
 
+mkdir -p ${OUT_DIR_BASE}
 
 MEGARES_ALN_FILE="${ARG_ALIGNMENTS_BASE_DIR}/MEGARes/${BASE_NAME}_ato_megaresv2.sam"
 ACLAME_ALN_FILE="${MGE_ALIGNMENTS_BASE_DIR}/ACLAME/${BASE_NAME}_ato_ACLAME.sam"

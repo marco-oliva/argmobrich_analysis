@@ -8,7 +8,7 @@
 #SBATCH --mem-per-cpu=4gb
 #SBATCH --time=24:00:00
 #SBATCH --output=%A-%a_mobilome.out    # Standard output and error log
-#SBATCH --array=1-97                 # Array range
+#SBATCH --array=1-16                 # Array range
 
 ##----------------------------------------------------------
 # Print Some statistics
@@ -16,10 +16,10 @@ pwd; hostname; date
 
 ##----------------------------------------------------------
 # Setup
-READS_DIR="/blue/boucher/marco.oliva/data/Noyes_Project_026/Reads/Deduplicated"
+READS_DIR="/blue/boucher/marco.oliva/data/Noyes_Project_026_assemblies/Assemblies_Fasta"
 SCRIPT="python /blue/boucher/marco.oliva/projects/remote/argmobrich_analysis/mobilome/gen_mobilome.py"
-SAM_FILES_BASE="/blue/boucher/marco.oliva/data/Noyes_Project_026/data_analysis/mobilome/sam_files"
-OUT_DIR_BASE="/blue/boucher/marco.oliva/data/Noyes_Project_026/data_analysis/mobilome"
+SAM_FILES_BASE="/blue/boucher/marco.oliva/data/Noyes_Project_026_assemblies/Assemblies_Fasta/mobilome/sam_files"
+OUT_DIR_BASE="/blue/boucher/marco.oliva/data/Noyes_Project_026_assemblies/Assemblies_Fasta/mobilome"
 
 PROFILER="/usr/bin/time --verbose"
 
@@ -27,12 +27,12 @@ module load python
 module load samtools
 module load minimap
 
-file_list=(${READS_DIR}/*.fastq.gz)
+file_list=(${READS_DIR}/*.fasta.gz)
 
 # Working on i-th file
 FILE_NUM=$(( $SLURM_ARRAY_TASK_ID - 1 ))
 FILE_NAME=${file_list[${FILE_NUM}]}
-BASE_NAME=$(basename ${FILE_NAME} .fastq.gz)
+BASE_NAME=$(basename ${FILE_NAME} .fasta.gz)
 
 
 echo "Working on ${FILE_NUM}: ${FILE_NAME}"

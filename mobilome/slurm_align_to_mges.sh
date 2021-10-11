@@ -8,7 +8,7 @@
 #SBATCH --mem-per-cpu=8gb
 #SBATCH --time=288:00:00
 #SBATCH --output=amges_%A-%a.out    # Standard output and error log
-#SBATCH --array=1-97                # Array range
+#SBATCH --array=1-16                # Array range
 
 ##----------------------------------------------------------
 # Print Some statistics
@@ -16,8 +16,8 @@ pwd; hostname; date
 
 ##----------------------------------------------------------
 # Setup
-READS_DIR="/blue/boucher/marco.oliva/data/Noyes_Project_026/Reads/Deduplicated"
-OUT_DIR_BASE="/blue/boucher/marco.oliva/data/Noyes_Project_026/data_analysis/mobilome/sam_files"
+READS_DIR="/blue/boucher/marco.oliva/data/Noyes_Project_026_assemblies/Assemblies_Fasta"
+OUT_DIR_BASE="/blue/boucher/marco.oliva/data/Noyes_Project_026_assemblies/Assemblies_Fasta/mobilome/sam_files"
 
 MGES_BASE="/blue/boucher/marco.oliva/data/MGE_DBs"
 KEGG_DB="${MGES_BASE}/KEGG/kegg_prokaryotes.fasta"
@@ -31,16 +31,20 @@ module load python
 module load samtools
 module load minimap
 
-file_list=(${READS_DIR}/*.fastq.gz)
+file_list=(${READS_DIR}/*.fasta.gz)
 
 # Working on i-th file
 FILE_NUM=$(( $SLURM_ARRAY_TASK_ID - 1 ))
 FILE_NAME=${file_list[${FILE_NUM}]}
-BASE_NAME=$(basename ${FILE_NAME} .fastq.gz)
+BASE_NAME=$(basename ${FILE_NAME} .fasta.gz)
 
 echo "Working on ${FILE_NUM}: ${FILE_NAME}"
 
 MINIMAP_FLAGS="-ax map-pb"
+mkdir -p "${OUT_DIR_BASE}/KEGG"
+mkdir -p "${OUT_DIR_BASE}/ACLAME"
+mkdir -p "${OUT_DIR_BASE}/ICEBERG"
+mkdir -p "${OUT_DIR_BASE}/PLASMIDS"
 
 # KEGG
 if [ ! -f "${OUT_DIR_BASE}/KEGG/${BASE_NAME}_ato_KEGG.sam" ]

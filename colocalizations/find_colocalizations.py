@@ -92,7 +92,29 @@ def get_colocalizations(reads_file_path, to_megares_path, to_aclme_path, to_iceb
     else:
         reads_file_handle = open(reads_file_path, 'rt')
 
-    for record in SeqIO.parse(reads_file_handle, "fastq"):
+    fasta_exts = [".fasta", ".fa", ".fna", ".FASTA", ".FA", ".FNA"]
+    fastq_exts = [".fastq", ".fq", ".FASTQ", ".FQ" ]
+
+    is_fasta = False
+    for ext_fa in fasta_exts:
+        if ext_fa in reads_file_path:
+            is_fasta = True
+
+    is_fastq = False
+    if not is_fasta:
+        for ext_fq in fastq_exts:
+            if ext_fq in reads_file_path:
+                is_fastq = True
+
+    if is_fasta:
+        file_format = "fasta"
+    elif is_fastq:
+        file_format = "fastq"
+    else:
+        print("Couldn't recognize reads file format")
+        sys.exit(1)
+
+    for record in SeqIO.parse(reads_file_handle, file_format):
         reads_length[record.id] = len(record.seq)
 
     reads_file_handle.close()
