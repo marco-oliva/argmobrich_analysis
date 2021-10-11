@@ -1,8 +1,8 @@
+#!/usr/bin/env python3
 import sys
 from Bio import SeqIO
 import pysam
 import itertools
-#import pandas as pd
 import csv
 import argparse
 import gzip
