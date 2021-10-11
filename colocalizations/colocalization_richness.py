@@ -6,8 +6,7 @@ import argparse
 
 
 
-#GLOBAL_MEGARES_ONTOLOGY_PATH = "/blue/boucher/marco.oliva/data/MEGARes/V2/megares_modified_annotations_v2.00.csv"
-GLOBAL_MEGARES_ONTOLOGY_PATH = "/home/marco/Downloads/megares_modified_annotations_v2.00.csv"
+GLOBAL_MEGARES_ONTOLOGY_PATH = "/blue/boucher/marco.oliva/data/MEGARes/V2/megares_modified_annotations_v2.00.csv"
 
 #Essentially just a way to define equality/uniqueness
 class Colocalization:
@@ -70,7 +69,6 @@ def main():
 
     parser = argparse.ArgumentParser(description='Colocalizations Finder.')
     parser.add_argument('-c', help='Colocalizations csv file', dest='coloc_csv_path', required=True)
-    parser.add_argument('-o', help='Output path for richness csv file', dest='out_csv', required=True)
     args = parser.parse_args()
 
     root_logger = logging.getLogger()
@@ -142,10 +140,9 @@ def main():
 
     sorted_unique_colocs = sorted(colocs, key=lambda coloc: coloc_counts[coloc], reverse=True)
 
-    root_logger.info("Foung {} unique colocalizations".format(len(sorted_unique_colocs)))
-    root_logger.info("Writing output to {}".format(args.out_csv))
+    root_logger.info("Found {} unique colocalizations".format(len(sorted_unique_colocs)))
 
-    with open(args.out_csv, 'w') as richness_csv:
+    with sys.stdout as richness_csv:
         coloc_writer = csv.writer(richness_csv)
         coloc_writer.writerow([])
         coloc_writer.writerow(["Number of unique colocalizations:", len(sorted_unique_colocs)])

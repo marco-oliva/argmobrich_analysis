@@ -69,8 +69,8 @@ python ${SCRIPT} -k ${KEGG_ALN_FILE} \
                  -i ${ICEBERG_ALN_FILE} \
                  -a ${ACLAME_ALN_FILE} \
                  -m ${MEGARES_ALN_FILE} \
-                 -r ${FILE_NAME} > ${OUT_DIR_BASE}/${BASE_NAME}_colocalizations.csv \
+                 -r ${FILE_NAME} \
                  -e ${SKIP_END} \
-                 -b ${SKIP_BEGIN}
+                 -b ${SKIP_BEGIN} > ${OUT_DIR_BASE}/${BASE_NAME}_colocalizations.csv
 
 set +x
