@@ -3,10 +3,7 @@ import csv
 import logging
 import sys
 import argparse
-
-
-
-GLOBAL_MEGARES_ONTOLOGY_PATH = "/blue/boucher/marco.oliva/data/MEGARes/V2/megares_modified_annotations_v2.00.csv"
+import configparser
 
 #Essentially just a way to define equality/uniqueness
 class Colocalization:
@@ -68,8 +65,12 @@ class Colocalization:
 def main():
 
     parser = argparse.ArgumentParser(description='Colocalizations Finder.')
-    parser.add_argument('-c', help='Colocalizations csv file', dest='coloc_csv_path', required=True)
+    parser.add_argument('-i', help='Colocalizations csv file', dest='coloc_csv_path', required=True)
+    parser.add_argument('-c', help='Config file', dest='config_path', required=True)
     args = parser.parse_args()
+
+    config = configparser.ConfigParser()
+    config.read(args.config_path)
 
     root_logger = logging.getLogger()
     root_logger.setLevel(logging.DEBUG)
@@ -84,7 +85,7 @@ def main():
 
     #Create ontology dictionary from MEGARes ontology file
     megares_ontology = {}
-    with open(GLOBAL_MEGARES_ONTOLOGY_PATH, 'r') as ontology_csv:
+    with open(config['DATABASE']['MEGARES_ONTOLOGY'], 'r') as ontology_csv:
         ontology_reader = csv.reader(ontology_csv)
         header = next(ontology_reader)
         for row in ontology_reader:

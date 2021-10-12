@@ -1,17 +1,9 @@
+import configparser
 from Bio import SeqIO
 import pysam
-
 import csv
 import argparse
 
-GLOBAL_MGE_THRESHOLD = 0.5
-
-GLOBAL_MEGARES_ONTOLOGY_PATH = "/blue/boucher/marco.oliva/data/MEGARes/V2/megares_modified_annotations_v2.00.csv"
-GLOBAL_MEGARES_SEQS_PATH = "/blue/boucher/marco.oliva/data/MEGARes/V2/megares_full_database_v2.00.fasta"
-GLOBAL_ACLAME_SEQS_PATH = "/blue/boucher/marco.oliva/data/MGE_DBs/ACLAME/aclame_genes_all_0.4.fasta"
-GLOBAL_PALSMIDS_SEQS_PATH = "/blue/boucher/marco.oliva/data/MGE_DBs/PLASMIDS/plasmids_combined.fsa"
-GLOBAL_ICEBERG_SEQS_PATH = "/blue/boucher/marco.oliva/data/MGE_DBs/ICEBERG/ICEberg_seq.fasta"
-GLOBAL_KEGG_SEQS_PATH = "/blue/boucher/marco.oliva/data/MGE_DBs/KEGG/kegg_prokaryotes.fasta"
 
 
 def main():
@@ -20,15 +12,19 @@ def main():
     parser.add_argument('-i', help='Iceberg alignment file', dest='iceberg_sam', required=True)
     parser.add_argument('-a', help='ACLAME alignment file', dest='aclame_sam', required=True)
     parser.add_argument('-o', help='Output file prefix', dest='out_prefix', required=True)
+    parser.add_argument('-c', help='Config file', dest='config_path', required=True)
     args = parser.parse_args()
+
+    config = configparser.ConfigParser()
+    config.read(args.config_path)
 
     # Get aclame, iceberg, and plasmid finder lengths for coverage
     aclame_gene_lengths = {}
     iceberg_gene_lengths = {}
     pf_gene_lengths = {}
-    aclame_reference_fasta_filename = GLOBAL_ACLAME_SEQS_PATH
-    iceberg_reference_fasta_filename = GLOBAL_ICEBERG_SEQS_PATH
-    pf_reference_fasta_filename = GLOBAL_PALSMIDS_SEQS_PATH
+    aclame_reference_fasta_filename = config['DATABASE']['ACLAME']
+    iceberg_reference_fasta_filename = config['DATABASE']['ICEBERG']
+    pf_reference_fasta_filename = config['DATABASE']['PLASMIDS']
 
 
     for rec in SeqIO.parse(aclame_reference_fasta_filename, "fasta"):
@@ -52,7 +48,7 @@ def main():
         if read.is_unmapped or read.is_secondary or read.is_supplementary:
             continue
         # check coverage
-        if (float(read.reference_length) / aclame_gene_lengths[read.reference_name]) > GLOBAL_MGE_THRESHOLD:
+        if (float(read.reference_length) / aclame_gene_lengths[read.reference_name]) > float(config['MISC']['GLOBAL_MGE_THRESHOLD']):
             if(not read.reference_name in gene_dict):
                 gene_dict[read.reference_name] = ["aclame", 1]
             else:

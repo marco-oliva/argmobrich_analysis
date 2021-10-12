@@ -41,6 +41,6 @@ echo "Working on ${FILE_NUM}: ${FILE_NAME}"
 set -x
 
 # Find colocalizations
-python ${SCRIPT} -c "${IN_BASE_DIR}/${BASE_NAME}_colocalizations.csv" > "${OUT_DIR_BASE}/${BASE_NAME}_colocalizations_richness.csv"
+python ${SCRIPT} -i "${IN_BASE_DIR}/${BASE_NAME}_colocalizations.csv" > "${OUT_DIR_BASE}/${BASE_NAME}_colocalizations_richness.csv"
 
 set +x

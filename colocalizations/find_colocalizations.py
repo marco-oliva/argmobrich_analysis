@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import configparser
 import sys
 from Bio import SeqIO
 import pysam
@@ -8,20 +9,7 @@ import argparse
 import gzip
 import logging
 
-############################################################
-# Thresholds
-GLOBAL_AMR_THRESHOLD = 0.8
-GLOBAL_MGE_THRESHOLD = 0.5
-GLOBAL_KEGG_THRESHOLD = 0.5
-
-GLOBAL_MEGARES_ONTOLOGY_PATH = "/blue/boucher/marco.oliva/data/MEGARes/V2/megares_modified_annotations_v2.00.csv"
-GLOBAL_MEGARES_SEQS_PATH = "/blue/boucher/marco.oliva/data/MEGARes/V2/megares_full_database_v2.00.fasta"
-GLOBAL_ACLAME_SEQS_PATH = "/blue/boucher/marco.oliva/data/MGE_DBs/ACLAME/aclame_genes_all_0.4.fasta"
-GLOBAL_PALSMIDS_SEQS_PATH = "/blue/boucher/marco.oliva/data/MGE_DBs/PLASMIDS/plasmids_combined.fsa"
-GLOBAL_ICEBERG_SEQS_PATH = "/blue/boucher/marco.oliva/data/MGE_DBs/ICEBERG/ICEberg_seq.fasta"
-GLOBAL_KEGG_SEQS_PATH = "/blue/boucher/marco.oliva/data/MGE_DBs/KEGG/kegg_prokaryotes.fasta"
-
-def populate_megares_ontology():
+def populate_megares_ontology(config):
     hierarchy_dict = {}
     class_samples = {}
     mech_samples = {}
@@ -29,7 +17,7 @@ def populate_megares_ontology():
 
     # Create ontology dictionary from MEGARes ontology file
     megares_ontology = {}
-    with open(GLOBAL_MEGARES_ONTOLOGY_PATH, 'r') as ontology_tsv:
+    with open(config['DATABASE']['MEGARES_ONTOLOGY'], 'r') as ontology_tsv:
         ontology_reader = csv.reader(ontology_tsv)
         for row in ontology_reader:
             # Skip column names
@@ -80,7 +68,7 @@ def not_overlapping(intervals_list, left_boundary=0, right_boundary=0):
     return True
 
 
-def get_colocalizations(reads_file_path, to_megares_path, to_aclme_path, to_iceberg_path, to_plasmids_path,
+def get_colocalizations(config, reads_file_path, to_megares_path, to_aclme_path, to_iceberg_path, to_plasmids_path,
                         to_kegg_path, skip_begin, skip_end):
     logger = logging.getLogger()
 
@@ -93,18 +81,18 @@ def get_colocalizations(reads_file_path, to_megares_path, to_aclme_path, to_iceb
         reads_file_handle = open(reads_file_path, 'rt')
 
     fasta_exts = [".fasta", ".fa", ".fna", ".FASTA", ".FA", ".FNA"]
-    fastq_exts = [".fastq", ".fq", ".FASTQ", ".FQ" ]
-
-    is_fasta = False
-    for ext_fa in fasta_exts:
-        if ext_fa in reads_file_path:
-            is_fasta = True
+    fastq_exts = [".fastq", ".fq", ".FASTQ", ".FQ"]
 
     is_fastq = False
-    if not is_fasta:
-        for ext_fq in fastq_exts:
-            if ext_fq in reads_file_path:
-                is_fastq = True
+    for ext_fq in fastq_exts:
+        if ext_fq in reads_file_path:
+            is_fastq = True
+
+    is_fasta = False
+    if not is_fastq:
+        for ext_fa in fasta_exts:
+            if ext_fa in reads_file_path:
+                is_fasta = True
 
     if is_fasta:
         file_format = "fasta"
@@ -115,14 +103,14 @@ def get_colocalizations(reads_file_path, to_megares_path, to_aclme_path, to_iceb
         sys.exit(1)
 
     for record in SeqIO.parse(reads_file_handle, file_format):
-        reads_length[record.id] = len(record.seq)
+        reads_length[record.description] = len(record.seq)
 
     reads_file_handle.close()
 
     # Get AMR genes lengths for coverage
     logger.info("Reading ARGS DB")
     megares_gene_lengths = {}
-    megares_reference_fasta_filename = GLOBAL_MEGARES_SEQS_PATH
+    megares_reference_fasta_filename = config['DATABASE']['MEGARES']
     for rec in SeqIO.parse(megares_reference_fasta_filename, "fasta"):
         megares_gene_lengths[rec.name] = len(rec.seq)
 
@@ -130,22 +118,22 @@ def get_colocalizations(reads_file_path, to_megares_path, to_aclme_path, to_iceb
     logger.info("Reading MGES DB")
     mge_gene_lengths = dict()
     mge_gene_lengths['aclme'] = dict()
-    aclame_reference_fasta_filename = GLOBAL_ACLAME_SEQS_PATH
+    aclame_reference_fasta_filename = config['DATABASE']['ACLAME']
     for rec in SeqIO.parse(aclame_reference_fasta_filename, "fasta"):
         mge_gene_lengths['aclme'][rec.name] = len(rec.seq)
 
     mge_gene_lengths['iceberg'] = dict()
-    iceberg_reference_fasta_filename = GLOBAL_ICEBERG_SEQS_PATH
+    iceberg_reference_fasta_filename = config['DATABASE']['ICEBERG']
     for rec in SeqIO.parse(iceberg_reference_fasta_filename, "fasta"):
         mge_gene_lengths['iceberg'][rec.name] = len(rec.seq)
 
     mge_gene_lengths['plasmids'] = dict()
-    plasmids_reference_fasta_filename = GLOBAL_PALSMIDS_SEQS_PATH
+    plasmids_reference_fasta_filename = config['DATABASE']['PLASMIDS']
     for rec in SeqIO.parse(plasmids_reference_fasta_filename, "fasta"):
         mge_gene_lengths['plasmids'][rec.name] = len(rec.seq)
 
     kegg_gene_lengths = dict()
-    kegg_reference_fasta_filename = GLOBAL_KEGG_SEQS_PATH
+    kegg_reference_fasta_filename = config['DATABASE']['KEGG']
     for rec in SeqIO.parse(kegg_reference_fasta_filename, "fasta"):
         kegg_gene_lengths[rec.name] = len(rec.seq)
 
@@ -159,7 +147,7 @@ def get_colocalizations(reads_file_path, to_megares_path, to_aclme_path, to_iceb
         for read in to_megares_samfile:
             if (not read.is_unmapped and ((not read.is_secondary) and (not read.is_supplementary))):
                 # Check coverage
-                if ((read.reference_length / (megares_gene_lengths[read.reference_name])) > GLOBAL_AMR_THRESHOLD):
+                if ((read.reference_length / (megares_gene_lengths[read.reference_name])) > float(config['MISC']['GLOBAL_AMR_THRESHOLD'])):
                     if (read.query_name not in read_to_amr):
                         read_to_amr[read.query_name] = list()
                         amr_positions[read.query_name] = list()
@@ -181,7 +169,7 @@ def get_colocalizations(reads_file_path, to_megares_path, to_aclme_path, to_iceb
         for read in to_kegg_samfile:
             if (not read.is_unmapped):
                 # Check coverage
-                if ((read.reference_length / (kegg_gene_lengths[read.reference_name])) > GLOBAL_KEGG_THRESHOLD):
+                if ((read.reference_length / (kegg_gene_lengths[read.reference_name])) > float(config['MISC']['GLOBAL_KEGG_THRESHOLD'])):
                     if (read.query_name not in read_to_kegg):
                         read_to_kegg[read.query_name] = list()
                         kegg_positions[read.query_name] = list()
@@ -203,7 +191,7 @@ def get_colocalizations(reads_file_path, to_megares_path, to_aclme_path, to_iceb
                     # Check coverage
                     gene_length = mge_gene_lengths[mge_db_name][read.reference_name]
 
-                    if ((read.reference_length / gene_length) > GLOBAL_MGE_THRESHOLD):
+                    if ((read.reference_length / gene_length) > float(config['MISC']['GLOBAL_MGE_THRESHOLD'])):
                         if (read.query_name not in read_to_mges[mge_db_name]):
                             read_to_mges[mge_db_name][read.query_name] = list()
                             mge_positions[mge_db_name][read.query_name] = list()
@@ -286,8 +274,11 @@ def main():
     parser.add_argument('-r', help='Reads file', dest='reads_file', required=True)
     parser.add_argument('-e', help='Skip n bases at the end of the read', dest='skip_end', default=0, type=int)
     parser.add_argument('-b', help='Skip n bases at the beginning of the read', dest='skip_begin', default=0, type=int)
-
+    parser.add_argument('-c', help='Config file', dest='config_path', required=True)
     args = parser.parse_args()
+
+    config = configparser.ConfigParser()
+    config.read(args.config_path)
 
     root_logger = logging.getLogger()
     root_logger.setLevel(logging.DEBUG)
@@ -298,16 +289,8 @@ def main():
     handler.setFormatter(formatter)
     root_logger.addHandler(handler)
 
-#    mge_genes_names = dict()
-#    mge_genes_types = dict()
-#    mge_accessions = set()
-#    annotations_df = pd.read_excel("../heatmaps/TELS_MGE_ACCESSIONS.xlsx")
-#    for index, row in annotations_df.iterrows():
-#        mge_genes_names[str(row['ACCESSIONS'])] = str(row['MGE NAME'])
-#        mge_genes_types[str(row['MGE NAME'])] = str(row['MGE TYPE'])
-#        mge_accessions.add(str(row['ACCESSIONS']))
-
-    amr_set, mge_set, sample_colocalizations = get_colocalizations(args.reads_file,
+    amr_set, mge_set, sample_colocalizations = get_colocalizations(config,
+                                                                   args.reads_file,
                                                                    args.megares_sam,
                                                                    args.aclame_sam,
                                                                    args.iceberg_sam,

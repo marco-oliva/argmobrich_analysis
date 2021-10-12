@@ -1,24 +1,22 @@
 from Bio import SeqIO
 import pysam
 import argparse
-
 import csv
-
-GLOBAL_AMR_THRESHOLD = 0.8
-
-GLOBAL_MEGARES_ONTOLOGY_PATH = "/blue/boucher/marco.oliva/data/MEGARes/V2/megares_modified_annotations_v2.00.csv"
-GLOBAL_MEGARES_SEQS_PATH = "/blue/boucher/marco.oliva/data/MEGARes/V2/megares_full_database_v2.00.fasta"
-
+import configparser
 
 def main():
     parser = argparse.ArgumentParser(description='Compute resistome')
     parser.add_argument('-s', help='Alignment file', dest='sam_file', required=True)
     parser.add_argument('-o', help='Output Prefix', dest='out_prefix', required=True)
+    parser.add_argument('-c', help='Config file', dest='config_path', required=True)
     args = parser.parse_args()
+
+    config = configparser.ConfigParser()
+    config.read(args.config_path)
 
     # Get megares lengths for coverage
     megares_gene_lengths = {}
-    megares_reference_fasta_filename = GLOBAL_MEGARES_SEQS_PATH
+    megares_reference_fasta_filename = config['DATABASE']['MEGARES']
     for rec in SeqIO.parse(megares_reference_fasta_filename, "fasta"):
         megares_gene_lengths[rec.name] = len(rec.seq)
 
@@ -26,7 +24,7 @@ def main():
 
     # Create ontology dictionary from MEGARes ontology file
     megares_ontology = {}
-    ontology_filename = GLOBAL_MEGARES_ONTOLOGY_PATH
+    ontology_filename = config['DATABASE']['MEGARES_ONTOLOGY']
     with open(ontology_filename, 'r') as ontology_tsv:
         ontology_reader = csv.reader(ontology_tsv)
         for row in ontology_reader:
@@ -55,7 +53,7 @@ def main():
             continue
 
         # check coverage
-        if (float(read.reference_length) / megares_gene_lengths[read.reference_name]) > GLOBAL_AMR_THRESHOLD:
+        if (float(read.reference_length) / megares_gene_lengths[read.reference_name]) > float(config['MISC']['GLOBAL_AMR_THRESHOLD']):
             classname = megares_ontology[read.reference_name]["class"]
             mech = megares_ontology[read.reference_name]["mechanism"]
             group = megares_ontology[read.reference_name]["group"]
