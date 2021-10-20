@@ -2,7 +2,6 @@ from Bio import SeqIO
 import pysam
 
 import csv
-import matplotlib.pyplot as plt
 import os.path
 import sys
 
