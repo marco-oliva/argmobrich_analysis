@@ -103,7 +103,7 @@ def get_colocalizations(config, reads_file_path, to_megares_path, to_aclme_path,
         sys.exit(1)
 
     for record in SeqIO.parse(reads_file_handle, file_format):
-        reads_length[record.description] = len(record.seq)
+        reads_length[record.name] = len(record.seq)
 
     reads_file_handle.close()
 
@@ -230,6 +230,9 @@ def get_colocalizations(config, reads_file_path, to_megares_path, to_aclme_path,
 
     colocalizations = dict()
     for read, candidate_colocalization_list in candidate_colocalizations.items():
+        if (read not in reads_length):
+            logger.error("{} not in read lengths.".format(read))
+            continue
         for i in range(1, len(candidate_colocalization_list)):
             for coloc in itertools.combinations(candidate_colocalization_list[1:], i):
                 intervals = list()

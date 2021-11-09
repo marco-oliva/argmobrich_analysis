@@ -221,27 +221,27 @@ def main():
     config.read(args.config_path)
 
     # Single input file
-    if config['PIPELINE_STEPS']['ALIGN_TO_MEGARES']:
+    if config['PIPELINE_STEPS']['ALIGN_TO_MEGARES'] in ['True', 'true']:
         root_logger.info("Aligning to Megares")
         align_to_megares(config, args.input_path, args.output_dir_path)
 
-    if config['PIPELINE_STEPS']['ALIGN_TO_MGES']:
+    if config['PIPELINE_STEPS']['ALIGN_TO_MGES'] in ['True', 'true']:
         root_logger.info("Aligning to MGEs")
         align_to_mges(config, args.input_path, args.output_dir_path)
 
-    if config['PIPELINE_STEPS']['ALIGN_TO_KEGG']:
+    if config['PIPELINE_STEPS']['ALIGN_TO_KEGG'] in ['True', 'true']:
         root_logger.info("Aligning to KEGG")
         align_to_kegg(config, args.input_path, args.output_dir_path)
 
-    if config['PIPELINE_STEPS']['COMPUTE_RESISTOME']:
+    if config['PIPELINE_STEPS']['COMPUTE_RESISTOME'] in ['True', 'true']:
         root_logger.info("Generating Resistome")
         gen_resistome(config, args.config_path, args.input_path, args.output_dir_path)
 
-    if config['PIPELINE_STEPS']['COMPUTE_MOBILOME']:
+    if config['PIPELINE_STEPS']['COMPUTE_MOBILOME'] in ['True', 'true']:
         root_logger.info("Generating Mobilome")
         gen_mobilome(config, args.config_path, args.input_path, args.output_dir_path)
 
-    if config['PIPELINE_STEPS']['COMPUTE_COLOCALIZATIONS']:
+    if config['PIPELINE_STEPS']['COMPUTE_COLOCALIZATIONS'] in ['True', 'true']:
         root_logger.info("Generating Colocalizations")
         gen_colocalizations(config, args.config_path, args.input_path, args.output_dir_path)
         gen_colocalizations_richness(config, args.config_path, args.input_path, args.output_dir_path)
