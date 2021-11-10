@@ -4,7 +4,7 @@ import pysam
 import statistics
 import sys
 
-sys.path.append("../common")
+sys.path.append("../utils")
 from utils.common import *
 
 
