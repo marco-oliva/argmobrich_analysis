@@ -2,14 +2,17 @@
 from Bio import SeqIO
 import pysam
 import statistics
+import sys
 
-
+sys.path.append("../common")
 from utils.common import *
+
 
 def find_duplicates(config, TELS_statistcs):
     tmp_dir = config['OUTPUT']['OUT_DIR'] + '/tmp_files'
     mkdir_p(tmp_dir)
-    out_file = config['OUTPUT']['OUT_DIR'] + '/' + config['INPUT']['INPUT_FILE_NAME_EXT'] + config['EXTENSION']['DUPLICATES']
+    out_file = config['OUTPUT']['OUT_DIR'] + '/' + config['INPUT']['INPUT_FILE_NAME_EXT'] + config['EXTENSION'][
+        'DUPLICATES']
     command = '{find_duplicates_exe} -r {in_file} -o {out_dir} -t {threads} -n {clusters}'.format(
         find_duplicates_exe=config['SCRIPTS']['FIND_DUPLICATES'],
         in_file=config['INPUT']['INPUT_FILE'],
@@ -19,19 +22,25 @@ def find_duplicates(config, TELS_statistcs):
     execute_command(command, out_file_path=out_file)
     remove(tmp_dir)
     TELS_statistcs['READS_AFTER_DEDUPLICATION'] = sum(1 for line in open(out_file))
-    TELS_statistcs['READS_AFTER_DEDUPLICATION_PERC'] = (float(TELS_statistcs['READS_AFTER_DEDUPLICATION']) / float(TELS_statistcs['READS_BEFORE_DEDUPLICATION'])) * 100
+    TELS_statistcs['READS_AFTER_DEDUPLICATION_PERC'] = (float(TELS_statistcs['READS_AFTER_DEDUPLICATION']) / float(
+        TELS_statistcs['READS_BEFORE_DEDUPLICATION'])) * 100
+
 
 def deduplicate(config, TELS_statistcs):
-    out_file = config['OUTPUT']['OUT_DIR'] + '/' + config['INPUT']['INPUT_FILE_NAME_EXT'] + config['EXTENSION']['DEDUPLICATED']
+    out_file = config['OUTPUT']['OUT_DIR'] + '/' + config['INPUT']['INPUT_FILE_NAME_EXT'] + config['EXTENSION'][
+        'DEDUPLICATED']
     command = '{deduplicate_exe} -d {duplicates_csv} -r {in_file}'.format(
         deduplicate_exe=config['SCRIPTS']['DEDUPLICATE'],
-        duplicates_csv=config['OUTPUT']['OUT_DIR'] + '/' + config['INPUT']['INPUT_FILE_NAME_EXT'] + config['EXTENSION']['DUPLICATES'],
+        duplicates_csv=config['OUTPUT']['OUT_DIR'] + '/' + config['INPUT']['INPUT_FILE_NAME_EXT'] + config['EXTENSION'][
+            'DUPLICATES'],
         in_file=config['INPUT']['INPUT_FILE'])
     execute_command(command, out_file_path=out_file)
     config['INPUT']['INPUT_FILE_NAME_EXT'] = os.path.basename(out_file)
     config['INPUT']['INPUT_FILE_NAME_NO_EXT'] = os.path.splitext(config['INPUT']['INPUT_FILE_NAME_EXT'])[0]
     config['INPUT']['INPUT_FILE_PATH'] = os.path.dirname(os.path.abspath(out_file))
-    config['INPUT']['INPUT_FILE'] = os.path.join(config['INPUT']['INPUT_FILE_PATH'], config['INPUT']['INPUT_FILE_NAME_EXT'])
+    config['INPUT']['INPUT_FILE'] = os.path.join(config['INPUT']['INPUT_FILE_PATH'],
+                                                 config['INPUT']['INPUT_FILE_NAME_EXT'])
+
 
 def align_to_megares(config, TELS_statistcs):
     aligner_exe = config['TOOLS']['ALIGNER']
@@ -43,7 +52,8 @@ def align_to_megares(config, TELS_statistcs):
     megares_path = config['DATABASE']['MEGARES']
 
     mkdir_p(config['OUTPUT']['OUT_DIR'])
-    out_file = config['OUTPUT']['OUT_DIR'] + '/' + config['INPUT']['INPUT_FILE_NAME_EXT'] + config['EXTENSION']['A_TO_MEGARES']
+    out_file = config['OUTPUT']['OUT_DIR'] + '/' + config['INPUT']['INPUT_FILE_NAME_EXT'] + config['EXTENSION'][
+        'A_TO_MEGARES']
     align_command = '{exe} {flags} {db} {i_file}'.format(
         exe=aligner_exe,
         flags=aligner_flags,
@@ -80,7 +90,8 @@ def align_to_kegg(config, TELS_statistcs):
     kegg_path = config['DATABASE']['KEGG']
 
     mkdir_p(config['OUTPUT']['OUT_DIR'])
-    out_file = config['OUTPUT']['OUT_DIR'] + '/' + config['INPUT']['INPUT_FILE_NAME_EXT'] + config['EXTENSION']['A_TO_KEGG']
+    out_file = config['OUTPUT']['OUT_DIR'] + '/' + config['INPUT']['INPUT_FILE_NAME_EXT'] + config['EXTENSION'][
+        'A_TO_KEGG']
     align_command = '{exe} {flags} {db} {i_file}'.format(
         exe=aligner_exe,
         flags=aligner_flags,
@@ -103,7 +114,8 @@ def align_to_mges(config, fastq_file_path, out_dir):
 
     mkdir_p(config['OUTPUT']['OUT_DIR'])
 
-    out_file = config['OUTPUT']['OUT_DIR'] + '/' + config['INPUT']['INPUT_FILE_NAME_EXT'] + config['EXTENSION']['A_TO_PLASMIDS']
+    out_file = config['OUTPUT']['OUT_DIR'] + '/' + config['INPUT']['INPUT_FILE_NAME_EXT'] + config['EXTENSION'][
+        'A_TO_PLASMIDS']
     align_command = '{exe} {flags} {db} {i_file}'.format(
         exe=aligner_exe,
         flags=aligner_flags,
@@ -111,7 +123,8 @@ def align_to_mges(config, fastq_file_path, out_dir):
         i_file=config['INPUT']['INPUT_FILE'])
     execute_command(align_command, out_file_path=out_file)
 
-    out_file = config['OUTPUT']['OUT_DIR'] + '/' + config['INPUT']['INPUT_FILE_NAME_EXT'] + config['EXTENSION']['A_TO_ACLAME']
+    out_file = config['OUTPUT']['OUT_DIR'] + '/' + config['INPUT']['INPUT_FILE_NAME_EXT'] + config['EXTENSION'][
+        'A_TO_ACLAME']
     align_command = '{exe} {flags} {db} {i_file}'.format(
         exe=aligner_exe,
         flags=aligner_flags,
@@ -119,7 +132,8 @@ def align_to_mges(config, fastq_file_path, out_dir):
         i_file=config['INPUT']['INPUT_FILE'])
     execute_command(align_command, out_file_path=out_file)
 
-    out_file = config['OUTPUT']['OUT_DIR'] + '/' + config['INPUT']['INPUT_FILE_NAME_EXT'] + config['EXTENSION']['A_TO_ICEBERG']
+    out_file = config['OUTPUT']['OUT_DIR'] + '/' + config['INPUT']['INPUT_FILE_NAME_EXT'] + config['EXTENSION'][
+        'A_TO_ICEBERG']
     align_command = '{exe} {flags} {db} {i_file}'.format(
         exe=aligner_exe,
         flags=aligner_flags,
@@ -130,7 +144,8 @@ def align_to_mges(config, fastq_file_path, out_dir):
 
 def gen_resistome(config, TELS_statistcs):
     gen_resistome_script = config['SCRIPTS']['GEN_RESISTOME']
-    sam_file = config['OUTPUT']['OUT_DIR'] + '/' + config['INPUT']['INPUT_FILE_NAME_EXT'] + config['EXTENSION']['A_TO_MEGARES']
+    sam_file = config['OUTPUT']['OUT_DIR'] + '/' + config['INPUT']['INPUT_FILE_NAME_EXT'] + config['EXTENSION'][
+        'A_TO_MEGARES']
     out_file = config['OUTPUT']['OUT_DIR'] + '/' + config['INPUT']['INPUT_FILE_NAME_EXT']
 
     gen_resistome_command = 'python {script} -s {sam_file} -o {out_name} -c {config_path}'.format(
@@ -144,9 +159,12 @@ def gen_resistome(config, TELS_statistcs):
 
 def gen_mobilome(config, TELS_statistcs):
     gen_mobilome_script = config['SCRIPTS']['GEN_MOBILOME']
-    sam_file_plasmids = config['OUTPUT']['OUT_DIR'] + '/' + config['INPUT']['INPUT_FILE_NAME_EXT'] + config['EXTENSION']['A_TO_PLASMIDS']
-    sam_file_aclame = config['OUTPUT']['OUT_DIR'] + '/' + config['INPUT']['INPUT_FILE_NAME_EXT'] + config['EXTENSION']['A_TO_ACLAME']
-    sam_file_iceberg = config['OUTPUT']['OUT_DIR'] + '/' + config['INPUT']['INPUT_FILE_NAME_EXT'] + config['EXTENSION']['A_TO_ICEBERG']
+    sam_file_plasmids = config['OUTPUT']['OUT_DIR'] + '/' + config['INPUT']['INPUT_FILE_NAME_EXT'] + \
+                        config['EXTENSION']['A_TO_PLASMIDS']
+    sam_file_aclame = config['OUTPUT']['OUT_DIR'] + '/' + config['INPUT']['INPUT_FILE_NAME_EXT'] + config['EXTENSION'][
+        'A_TO_ACLAME']
+    sam_file_iceberg = config['OUTPUT']['OUT_DIR'] + '/' + config['INPUT']['INPUT_FILE_NAME_EXT'] + config['EXTENSION'][
+        'A_TO_ICEBERG']
     out_file = config['OUTPUT']['OUT_DIR'] + '/' + config['INPUT']['INPUT_FILE_NAME_EXT']
 
     gen_mobilome_command = 'python {script} -p {sam_plasmids} -a {sam_aclame} -i {sam_iceberg} -o {out_name}  -c {config_path}'.format(
@@ -162,12 +180,18 @@ def gen_mobilome(config, TELS_statistcs):
 
 def gen_colocalizations(config, TELS_statistcs):
     gen_colocalizations_script = config['SCRIPTS']['FIND_COLOCALIZATIONS']
-    sam_file_plasmids = config['OUTPUT']['OUT_DIR'] + '/' + config['INPUT']['INPUT_FILE_NAME_EXT'] + config['EXTENSION']['A_TO_PLASMIDS']
-    sam_file_aclame = config['OUTPUT']['OUT_DIR'] + '/' + config['INPUT']['INPUT_FILE_NAME_EXT'] + config['EXTENSION']['A_TO_ACLAME']
-    sam_file_iceberg = config['OUTPUT']['OUT_DIR'] + '/' + config['INPUT']['INPUT_FILE_NAME_EXT'] + config['EXTENSION']['A_TO_ICEBERG']
-    sam_file_kegg = config['OUTPUT']['OUT_DIR'] + '/' + config['INPUT']['INPUT_FILE_NAME_EXT'] + config['EXTENSION']['A_TO_KEGG']
-    sam_file_megares = config['OUTPUT']['OUT_DIR'] + '/' + config['INPUT']['INPUT_FILE_NAME_EXT'] + config['EXTENSION']['A_TO_MEGARES']
-    out_file = config['OUTPUT']['OUT_DIR'] + '/' + config['INPUT']['INPUT_FILE_NAME_EXT'] + config['EXTENSION']['COLOCALIZATIONS']
+    sam_file_plasmids = config['OUTPUT']['OUT_DIR'] + '/' + config['INPUT']['INPUT_FILE_NAME_EXT'] + \
+                        config['EXTENSION']['A_TO_PLASMIDS']
+    sam_file_aclame = config['OUTPUT']['OUT_DIR'] + '/' + config['INPUT']['INPUT_FILE_NAME_EXT'] + config['EXTENSION'][
+        'A_TO_ACLAME']
+    sam_file_iceberg = config['OUTPUT']['OUT_DIR'] + '/' + config['INPUT']['INPUT_FILE_NAME_EXT'] + config['EXTENSION'][
+        'A_TO_ICEBERG']
+    sam_file_kegg = config['OUTPUT']['OUT_DIR'] + '/' + config['INPUT']['INPUT_FILE_NAME_EXT'] + config['EXTENSION'][
+        'A_TO_KEGG']
+    sam_file_megares = config['OUTPUT']['OUT_DIR'] + '/' + config['INPUT']['INPUT_FILE_NAME_EXT'] + config['EXTENSION'][
+        'A_TO_MEGARES']
+    out_file = config['OUTPUT']['OUT_DIR'] + '/' + config['INPUT']['INPUT_FILE_NAME_EXT'] + config['EXTENSION'][
+        'COLOCALIZATIONS']
     skip_begin = 0
     skip_end = 0
     if "V2" in config['INPUT']['INPUT_FILE_NAME_EXT']:
@@ -192,8 +216,10 @@ def gen_colocalizations(config, TELS_statistcs):
 
 def gen_colocalizations_richness(config, TELS_statistcs):
     gen_colocalizations_richness_script = config['SCRIPTS']['COLOCALIZATIONS_RICHNESS']
-    colocalizations_file = config['OUTPUT']['OUT_DIR'] + '/' + config['INPUT']['INPUT_FILE_NAME_EXT'] + config['EXTENSION']['COLOCALIZATIONS']
-    out_file = config['OUTPUT']['OUT_DIR'] + '/' + config['INPUT']['INPUT_FILE_NAME_EXT'] + config['EXTENSION']['COLOCALIZATIONS_RICHNESS']
+    colocalizations_file = config['OUTPUT']['OUT_DIR'] + '/' + config['INPUT']['INPUT_FILE_NAME_EXT'] + \
+                           config['EXTENSION']['COLOCALIZATIONS']
+    out_file = config['OUTPUT']['OUT_DIR'] + '/' + config['INPUT']['INPUT_FILE_NAME_EXT'] + config['EXTENSION'][
+        'COLOCALIZATIONS_RICHNESS']
 
     colocalizations_richness_command = 'python {script} -i {coloc_file} -c {config_path}'.format(
         script=gen_colocalizations_richness_script,
@@ -219,18 +245,23 @@ def main():
     if config['SCRIPTS']['BASE_PATH'] == '':
         config['SCRIPTS']['BASE_PATH'] = os.path.join('../', os.path.realpath(__file__))
 
-    config['SCRIPTS']['FIND_DUPLICATES'] = os.path.join(config['SCRIPTS']['BASE_PATH'], config['SCRIPTS']['FIND_DUPLICATES'])
+    config['SCRIPTS']['FIND_DUPLICATES'] = os.path.join(config['SCRIPTS']['BASE_PATH'],
+                                                        config['SCRIPTS']['FIND_DUPLICATES'])
     config['SCRIPTS']['DEDUPLICATE'] = os.path.join(config['SCRIPTS']['BASE_PATH'], config['SCRIPTS']['DEDUPLICATE'])
     config['SCRIPTS']['GEN_MOBILOME'] = os.path.join(config['SCRIPTS']['BASE_PATH'], config['SCRIPTS']['GEN_MOBILOME'])
-    config['SCRIPTS']['GEN_RESISTOME'] = os.path.join(config['SCRIPTS']['BASE_PATH'], config['SCRIPTS']['GEN_RESISTOME'])
-    config['SCRIPTS']['FIND_COLOCALIZATIONS'] = os.path.join(config['SCRIPTS']['BASE_PATH'], config['SCRIPTS']['FIND_COLOCALIZATIONS'])
-    config['SCRIPTS']['COLOCALIZATIONS_RICHNESS'] = os.path.join(config['SCRIPTS']['BASE_PATH'], config['SCRIPTS']['COLOCALIZATIONS_RICHNESS'])
+    config['SCRIPTS']['GEN_RESISTOME'] = os.path.join(config['SCRIPTS']['BASE_PATH'],
+                                                      config['SCRIPTS']['GEN_RESISTOME'])
+    config['SCRIPTS']['FIND_COLOCALIZATIONS'] = os.path.join(config['SCRIPTS']['BASE_PATH'],
+                                                             config['SCRIPTS']['FIND_COLOCALIZATIONS'])
+    config['SCRIPTS']['COLOCALIZATIONS_RICHNESS'] = os.path.join(config['SCRIPTS']['BASE_PATH'],
+                                                                 config['SCRIPTS']['COLOCALIZATIONS_RICHNESS'])
 
     config['INPUT'] = dict()
     config['INPUT']['INPUT_FILE_NAME_EXT'] = os.path.basename(args.input_path)
     config['INPUT']['INPUT_FILE_NAME_NO_EXT'] = os.path.splitext(config['INPUT']['INPUT_FILE_NAME_EXT'])[0]
     config['INPUT']['INPUT_FILE_PATH'] = os.path.dirname(os.path.abspath(args.input_path))
-    config['INPUT']['INPUT_FILE'] = os.path.join(config['INPUT']['INPUT_FILE_PATH'], config['INPUT']['INPUT_FILE_NAME_EXT'])
+    config['INPUT']['INPUT_FILE'] = os.path.join(config['INPUT']['INPUT_FILE_PATH'],
+                                                 config['INPUT']['INPUT_FILE_NAME_EXT'])
     config['OUTPUT'] = dict()
     config['OUTPUT']['OUT_DIR'] = os.path.abspath(args.output_dir_path)
     config['MISC']['HELPER_THREADS'] = args.helper_threads

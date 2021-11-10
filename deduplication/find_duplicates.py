@@ -13,6 +13,7 @@ from multiprocessing import Pool
 from Bio import SeqIO, SearchIO
 from sklearn.cluster import KMeans
 
+sys.path.append("../common")
 from utils.common import *
 
 def run_blat(input_file, out_pls_file):
