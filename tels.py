@@ -275,7 +275,7 @@ def main():
             TELS_statistcs['READS_BEFORE_DEDUPLICATION'] += 1
             TELS_statistcs['READ_LENGTHS'][record.name] = read_len
 
-    if config['PIPELINE_STEPS']['DEUPLICATE'] in ['True', 'true']:
+    if config['PIPELINE_STEPS']['DEDUPLICATE'] in ['True', 'true']:
         root_logger.info("Deduplicating: Finding duplicates")
         find_duplicates(config, TELS_statistcs)
         root_logger.info("Deduplicating: Filtering duplicates")
