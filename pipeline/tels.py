@@ -4,9 +4,8 @@ import pysam
 import statistics
 import sys
 
-sys.path.append("../utils")
+sys.path.append("../")
 from utils.common import *
-
 
 def find_duplicates(config, TELS_statistcs):
     tmp_dir = config['OUTPUT']['OUT_DIR'] + '/tmp_files'
