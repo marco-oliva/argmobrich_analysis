@@ -1,20 +1,12 @@
-import logging
-import signal
 import sys
 import numpy as np
 import os.path
-import gzip
-import subprocess
-import errno
-import csv
-import argparse
 from multiprocessing import Pool
 
 from Bio import SeqIO, SearchIO
 from sklearn.cluster import KMeans
 
-sys.path.append("../utils")
-from utils.common import *
+from common import *
 
 def run_blat(input_file, out_pls_file):
     blat_command = 'blat {fasta_name} {fasta_name} {psl_name}'.format(fasta_name=input_file,psl_name=out_pls_file)

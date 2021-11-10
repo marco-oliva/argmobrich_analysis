@@ -1,4 +1,4 @@
-from utils.common import *
+from src.common import *
 
 from Bio import SeqIO
 

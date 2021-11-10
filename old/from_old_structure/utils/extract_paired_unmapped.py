@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-from common import *
+from src.common import *
 import argparse
 
 def main():
