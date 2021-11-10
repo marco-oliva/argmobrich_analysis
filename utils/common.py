@@ -6,7 +6,8 @@ import configparser
 import os
 import argparse
 import subprocess
-
+import gzip
+import csv
 
 
 # ------------------------------------------------------------
@@ -47,6 +48,18 @@ def mkdir_p(path):
             pass
         else:
             raise  # nop
+
+def remove(path):
+    if os.path.isdir(path):
+        try:
+            os.rmdir(path)
+        except OSError as e:  ## if failed, report it back to the user ##
+            print("Error: %s - %s." % (e.filename, e.strerror))
+    elif os.path.isfile(path):
+        try:
+            os.remove(path)
+        except OSError as e:  ## if failed, report it back to the user ##
+            print("Error: %s - %s." % (e.filename, e.strerror))
 
 def init_logger():
     root_logger = logging.getLogger()

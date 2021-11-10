@@ -1,7 +1,4 @@
-import csv
-import gzip
-import argparse
-import sys
+from utils.common import *
 
 from Bio import SeqIO
 
@@ -10,6 +7,8 @@ def main():
     parser.add_argument('-r', help='Reads File (FASTA/FASTQ)', type=str, dest='reads_file', required=True)
     parser.add_argument('-d', help='Csv with duplicates sets', type=str, dest='duplicates_file', required=True)
     args = parser.parse_args()
+
+    root_logger = init_logger()
 
     fastq_with_dups = args.reads_file
     sets_csv = args.duplicates_file

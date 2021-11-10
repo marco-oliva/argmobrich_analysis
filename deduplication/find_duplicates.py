@@ -1,4 +1,6 @@
+import logging
 import signal
+import sys
 import numpy as np
 import os.path
 import gzip
@@ -11,36 +13,7 @@ from multiprocessing import Pool
 from Bio import SeqIO, SearchIO
 from sklearn.cluster import KMeans
 
-
-# execute command: return command's stdout if everything OK, None otherwise
-def execute_command(command, time_it=False, seconds=1000000):
-    try:
-        if time_it:
-            command = '/usr/bin/time --verbose {}'.format(command)
-        print('Executing: {}'.format(command))
-        process = subprocess.Popen(command.split(), preexec_fn=os.setsid, stdout=subprocess.PIPE)
-        (output, err) = process.communicate()
-        process.wait(timeout=seconds)
-    except subprocess.CalledProcessError:
-        return None
-    except subprocess.TimeoutExpired:
-        os.killpg(os.getpgid(process.pid), signal.SIGTERM)
-        return None
-    if output:
-        output = output.decode('utf-8')
-    if err:
-        err = err.decode('utf-8')
-    return output
-
-# mkdir -p
-def mkdir_p(path):
-    try:
-        os.makedirs(path)
-    except OSError as exc:
-        if exc.errno == errno.EEXIST and os.path.isdir(path):
-            pass
-        else:
-            raise # nop
+from utils.common import *
 
 def run_blat(input_file, out_pls_file):
     blat_command = 'blat {fasta_name} {fasta_name} {psl_name}'.format(fasta_name=input_file,psl_name=out_pls_file)
@@ -54,6 +27,8 @@ def main():
     parser.add_argument('-n', help='Number of clusters to generate', type=int, dest='num_clusters', default=200)
     parser.add_argument('-t', help='Number of threads', type=int, dest='num_threads', default=1)
     args = parser.parse_args()
+
+    root_logger = init_logger()
 
     reads_file = args.reads_file
     output_dir = args.out_dir
@@ -71,17 +46,17 @@ def main():
             file_type = 'fasta'
 
     if file_type == '':
-        print('File has to be either fastq or fasta')
+        root_logger.info('File has to be either fastq or fasta')
         exit()
 
     # Iterate through every read. Accumulate number of reads while recording read length
     read_lengths = ([], [])
 
     if (reads_file.endswith('.gz')):
-        print('Opening gzipped file')
+        root_logger.info('Opening gzipped file')
         file_handler = gzip.open(reads_file, 'rt')
     else:
-        print('Opening uncompressed file')
+        root_logger.info('Opening uncompressed file')
         file_handler = open(reads_file, 'rt')
 
     for record in SeqIO.parse(file_handler, file_type):
@@ -93,7 +68,7 @@ def main():
 
     if (len(read_lengths[0]) < num_clusters):
         num_clusters = int(len(read_lengths[0]) / 10)
-    print("Num of cluster used: {}".format(num_clusters))
+    root_logger.info("Num of cluster used: {}".format(num_clusters))
 
     kmeans = KMeans(n_clusters=num_clusters).fit(X.reshape((X.shape[0], 1)))
 
@@ -122,12 +97,11 @@ def main():
         pls_files = threads_pool.starmap(run_blat, input_tuples)
 
     # find duplicates
-    tsv_name = output_dir + '/pls_files/duplicates.tsv'
     for i in range(0, num_clusters):
         duplication_sets = []  # container of sets, where each set represents a clique of CCS that closely align
         # each alignment in psl: if qualifications met, those two belong to the same set
         cur_pls_file = pls_files[i]
-        print('Reading in ' + cur_pls_file, 'blat-psl')
+        root_logger.info('Reading in ' + cur_pls_file, 'blat-psl')
         for qresult in SearchIO.parse(cur_pls_file, 'blat-psl'):
             for hit in qresult:
                 for hsp in hit.hsps:
@@ -156,8 +130,7 @@ def main():
 
         non_singleton_dup_sets = [dup_set for dup_set in duplication_sets if len(dup_set) > 1]
         # append dup set to tsv
-        print('Writing to ' + tsv_name)
-        with open(tsv_name, 'a') as tsv_handle:
+        with sys.stdout as tsv_handle:
             tsv_writer = csv.writer(tsv_handle)
             tsv_writer.writerows(sorted(non_singleton_dup_sets, key=lambda dup_set: len(dup_set), reverse=True))
 
