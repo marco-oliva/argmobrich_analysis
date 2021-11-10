@@ -217,7 +217,7 @@ def main():
     config.read(args.config_path)
 
     if config['SCRIPTS']['BASE_PATH'] == '':
-        config['SCRIPTS']['BASE_PATH'] = os.path.realpath(__file__)
+        config['SCRIPTS']['BASE_PATH'] = os.path.join('../', os.path.realpath(__file__))
 
     config['SCRIPTS']['FIND_DUPLICATES'] = os.path.join(config['SCRIPTS']['BASE_PATH'], config['SCRIPTS']['FIND_DUPLICATES'])
     config['SCRIPTS']['DEDUPLICATE'] = os.path.join(config['SCRIPTS']['BASE_PATH'], config['SCRIPTS']['DEDUPLICATE'])
