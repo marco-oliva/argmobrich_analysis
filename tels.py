@@ -8,8 +8,7 @@ from src.common import *
 def find_duplicates(config, TELS_statistcs):
     tmp_dir = config['OUTPUT']['OUT_DIR'] + '/tmp_files'
     mkdir_p(tmp_dir)
-    out_file = config['OUTPUT']['OUT_DIR'] + '/' + config['INPUT']['INPUT_FILE_NAME_EXT'] + config['EXTENSION'][
-        'DUPLICATES']
+    out_file = config['OUTPUT']['OUT_DIR'] + '/' + config['INPUT']['INPUT_FILE_NAME_EXT'] + config['EXTENSION']['DUPLICATES']
     command = '{find_duplicates_exe} -r {in_file} -o {out_dir} -t {threads} -n {clusters}'.format(
         find_duplicates_exe=config['SCRIPTS']['FIND_DUPLICATES'],
         in_file=config['INPUT']['INPUT_FILE'],
@@ -28,15 +27,13 @@ def deduplicate(config, TELS_statistcs):
         'DEDUPLICATED']
     command = '{deduplicate_exe} -d {duplicates_csv} -r {in_file}'.format(
         deduplicate_exe=config['SCRIPTS']['DEDUPLICATE'],
-        duplicates_csv=config['OUTPUT']['OUT_DIR'] + '/' + config['INPUT']['INPUT_FILE_NAME_EXT'] + config['EXTENSION'][
-            'DUPLICATES'],
+        duplicates_csv=config['OUTPUT']['OUT_DIR'] + '/' + config['INPUT']['INPUT_FILE_NAME_EXT'] + config['EXTENSION']['DUPLICATES'],
         in_file=config['INPUT']['INPUT_FILE'])
     execute_command(command, out_file_path=out_file)
     config['INPUT']['INPUT_FILE_NAME_EXT'] = os.path.basename(out_file)
     config['INPUT']['INPUT_FILE_NAME_NO_EXT'] = os.path.splitext(config['INPUT']['INPUT_FILE_NAME_EXT'])[0]
     config['INPUT']['INPUT_FILE_PATH'] = os.path.dirname(os.path.abspath(out_file))
-    config['INPUT']['INPUT_FILE'] = os.path.join(config['INPUT']['INPUT_FILE_PATH'],
-                                                 config['INPUT']['INPUT_FILE_NAME_EXT'])
+    config['INPUT']['INPUT_FILE'] = os.path.join(config['INPUT']['INPUT_FILE_PATH'], onfig['INPUT']['INPUT_FILE_NAME_EXT'])
 
 
 def align_to_megares(config, TELS_statistcs):
@@ -240,25 +237,20 @@ def main():
     config.read(args.config_path)
 
     if config['SCRIPTS']['BASE_PATH'] == '':
-        config['SCRIPTS']['BASE_PATH'] = os.path.join('../', os.path.realpath(__file__))
+        config['SCRIPTS']['BASE_PATH'] = os.path.dirname(os.path.abspath(__file__))
 
-    config['SCRIPTS']['FIND_DUPLICATES'] = os.path.join(config['SCRIPTS']['BASE_PATH'],
-                                                        config['SCRIPTS']['FIND_DUPLICATES'])
+    config['SCRIPTS']['FIND_DUPLICATES'] = os.path.join(config['SCRIPTS']['BASE_PATH'], config['SCRIPTS']['FIND_DUPLICATES'])
     config['SCRIPTS']['DEDUPLICATE'] = os.path.join(config['SCRIPTS']['BASE_PATH'], config['SCRIPTS']['DEDUPLICATE'])
     config['SCRIPTS']['GEN_MOBILOME'] = os.path.join(config['SCRIPTS']['BASE_PATH'], config['SCRIPTS']['GEN_MOBILOME'])
-    config['SCRIPTS']['GEN_RESISTOME'] = os.path.join(config['SCRIPTS']['BASE_PATH'],
-                                                      config['SCRIPTS']['GEN_RESISTOME'])
-    config['SCRIPTS']['FIND_COLOCALIZATIONS'] = os.path.join(config['SCRIPTS']['BASE_PATH'],
-                                                             config['SCRIPTS']['FIND_COLOCALIZATIONS'])
-    config['SCRIPTS']['COLOCALIZATIONS_RICHNESS'] = os.path.join(config['SCRIPTS']['BASE_PATH'],
-                                                                 config['SCRIPTS']['COLOCALIZATIONS_RICHNESS'])
+    config['SCRIPTS']['GEN_RESISTOME'] = os.path.join(config['SCRIPTS']['BASE_PATH'], config['SCRIPTS']['GEN_RESISTOME'])
+    config['SCRIPTS']['FIND_COLOCALIZATIONS'] = os.path.join(config['SCRIPTS']['BASE_PATH'], config['SCRIPTS']['FIND_COLOCALIZATIONS'])
+    config['SCRIPTS']['COLOCALIZATIONS_RICHNESS'] = os.path.join(config['SCRIPTS']['BASE_PATH'], config['SCRIPTS']['COLOCALIZATIONS_RICHNESS'])
 
     config['INPUT'] = dict()
     config['INPUT']['INPUT_FILE_NAME_EXT'] = os.path.basename(args.input_path)
     config['INPUT']['INPUT_FILE_NAME_NO_EXT'] = os.path.splitext(config['INPUT']['INPUT_FILE_NAME_EXT'])[0]
     config['INPUT']['INPUT_FILE_PATH'] = os.path.dirname(os.path.abspath(args.input_path))
-    config['INPUT']['INPUT_FILE'] = os.path.join(config['INPUT']['INPUT_FILE_PATH'],
-                                                 config['INPUT']['INPUT_FILE_NAME_EXT'])
+    config['INPUT']['INPUT_FILE'] = os.path.join(config['INPUT']['INPUT_FILE_PATH'], config['INPUT']['INPUT_FILE_NAME_EXT'])
     config['OUTPUT'] = dict()
     config['OUTPUT']['OUT_DIR'] = os.path.abspath(args.output_dir_path)
     config['MISC']['HELPER_THREADS'] = args.helper_threads
