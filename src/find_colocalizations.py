@@ -253,6 +253,7 @@ def get_colocalizations(config, reads_file_path, to_megares_path, to_aclme_path,
                 kegg_genes_concatenated_names.append(name)
                 kegg_genes_concatenated_pos.append(pos)
 
+            logger.info(amr_genes_concatenated_names)
             row = [read,
                    ';'.join(amr_genes_concatenated_names), ';'.join(amr_genes_concatenated_pos),
                    ';'.join(mge_genes_concatenated_names), ';'.join(mge_genes_concatenated_pos),
