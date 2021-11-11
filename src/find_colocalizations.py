@@ -239,19 +239,19 @@ def get_colocalizations(config, reads_file_path, to_megares_path, to_aclme_path,
             amr_genes_concatenated_pos = list()
             for name, pos, _ in amr_genes_list:
                 amr_genes_concatenated_names.append(name)
-                amr_genes_concatenated_pos.append(str(pos))
+                amr_genes_concatenated_pos.append('({},{})'.format(pos[0], pos[1]))
 
             mge_genes_concatenated_names = list()
             mge_genes_concatenated_pos = list()
             for name, pos, _ in mge_genes_list:
                 mge_genes_concatenated_names.append(name)
-                mge_genes_concatenated_pos.append(str(pos))
+                mge_genes_concatenated_pos.append('({},{})'.format(pos[0], pos[1]))
 
             kegg_genes_concatenated_names = list()
             kegg_genes_concatenated_pos = list()
             for name, pos, _ in kegg_genes_list:
                 kegg_genes_concatenated_names.append(name)
-                kegg_genes_concatenated_pos.append(str(pos))
+                kegg_genes_concatenated_pos.append('({},{})'.format(pos[0], pos[1]))
 
             logger.info(amr_genes_concatenated_pos)
             row = [read,
