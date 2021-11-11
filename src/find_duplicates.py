@@ -94,7 +94,7 @@ def main():
         duplication_sets = []  # container of sets, where each set represents a clique of CCS that closely align
         # each alignment in psl: if qualifications met, those two belong to the same set
         cur_pls_file = pls_files[i]
-        root_logger.info('Reading in ' + cur_pls_file, 'blat-psl')
+        root_logger.info('Reading in ' + cur_pls_file)
         for qresult in SearchIO.parse(cur_pls_file, 'blat-psl'):
             for hit in qresult:
                 for hsp in hit.hsps:
