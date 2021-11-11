@@ -277,6 +277,10 @@ def main():
         if (os.path.isfile(deduped_file)):
             TELS_statistcs['READS_AFTER_DEDUPLICATION'] = sum(1 for record in SeqIO.parse(open(deduped_file, 'r'), read_file_type(deduped_file)))
             TELS_statistcs['READS_AFTER_DEDUPLICATION_PERC'] = (float(TELS_statistcs['READS_AFTER_DEDUPLICATION']) / float(TELS_statistcs['READS_BEFORE_DEDUPLICATION'])) * 100
+            config['INPUT']['INPUT_FILE_NAME_EXT'] = os.path.basename(deduped_file)
+            config['INPUT']['INPUT_FILE_NAME_NO_EXT'] = os.path.splitext(config['INPUT']['INPUT_FILE_NAME_EXT'])[0]
+            config['INPUT']['INPUT_FILE_PATH'] = os.path.dirname(os.path.abspath(deduped_file))
+            config['INPUT']['INPUT_FILE'] = os.path.join(config['INPUT']['INPUT_FILE_PATH'], config['INPUT']['INPUT_FILE_NAME_EXT'])
 
 
 
