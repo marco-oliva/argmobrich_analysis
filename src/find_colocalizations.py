@@ -231,19 +231,22 @@ def get_colocalizations(config, reads_file_path, to_megares_path, to_aclme_path,
             genes_lists[read].extend(kegg_genes_list)
             genes_lists[read].extend(mge_genes_list)
 
-            amr_genes_concatenated = ''
-            if len(amr_genes_list) > 0:
-                amr_genes_concatenated = ';'.join(list(itertools.chain(*amr_genes_list)))
+            amr_genes_concatenated = list()
+            amr_genes_concatenated.extend(amr_genes_list)
+            if len(amr_genes_concatenated) > 0:
+                amr_genes_concatenated_str = ';'.join(amr_genes_concatenated)
 
-            mge_genes_concatenated = ''
-            if len(mge_genes_list) > 0:
-                mge_genes_concatenated = ';'.join(list(itertools.chain(*mge_genes_list)))
+            mge_genes_concatenated = list()
+            mge_genes_concatenated.extend(mge_genes_list)
+            if len(mge_genes_concatenated) > 0:
+                mge_genes_concatenated_str = ';'.join(mge_genes_concatenated)
 
-            kegg_genes_concatenated = ''
-            if len(kegg_genes_list) > 0:
-                kegg_genes_concatenated = ';'.join(list(itertools.chain(*kegg_genes_list)))
+            kegg_genes_concatenated = list()
+            kegg_genes_concatenated.extend(kegg_genes_list)
+            if len(kegg_genes_concatenated) > 0:
+                kegg_genes_concatenated_str = ';'.join(kegg_genes_concatenated)
 
-            row = [read, amr_genes_concatenated, mge_genes_concatenated, kegg_genes_concatenated]
+            row = [read, amr_genes_concatenated_str, mge_genes_concatenated_str, kegg_genes_concatenated_str]
             writer.writerow(row)
 
     # Candidate colocalizations
