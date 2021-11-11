@@ -143,14 +143,14 @@ def main():
 
     root_logger.info("Found {} unique colocalizations".format(len(sorted_unique_colocs)))
 
-    with sys.stdout as richness_csv:
-        coloc_writer = csv.writer(richness_csv)
-        coloc_writer.writerow([])
-        coloc_writer.writerow(["Number of unique colocalizations:", len(sorted_unique_colocs)])
-        coloc_writer.writerow([])
-        coloc_writer.writerow(["MEGARes group", "MGE gene", "Distance (within " + str(Colocalization.distance_cutoff) + " nts)", "Occurences"])
-        for coloc in sorted_unique_colocs:
-            coloc_writer.writerow([coloc.amr_group, coloc.mge_header, coloc.distance, coloc_counts[coloc]])
+    richness_csv = sys.stdout
+    coloc_writer = csv.writer(richness_csv)
+    coloc_writer.writerow([])
+    coloc_writer.writerow(["Number of unique colocalizations:", len(sorted_unique_colocs)])
+    coloc_writer.writerow([])
+    coloc_writer.writerow(["MEGARes group", "MGE gene", "Distance (within " + str(Colocalization.distance_cutoff) + " nts)", "Occurences"])
+    for coloc in sorted_unique_colocs:
+        coloc_writer.writerow([coloc.amr_group, coloc.mge_header, coloc.distance, coloc_counts[coloc]])
 
 
 if __name__ == "__main__":

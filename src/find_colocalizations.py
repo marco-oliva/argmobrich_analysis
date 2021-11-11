@@ -306,46 +306,46 @@ def main():
     logger.info("Found {} reads with colocalizations".format(len(sample_colocalizations)))
 
     # Output colocalizations to stdout
-    with sys.stdout as csvfile:
-        writer = csv.writer(csvfile)
-        header = ['read', 'ARG', 'ARG positions', 'MGE(s)', 'MGE(s) positions', 'KEGG(s)', 'KEGG(s) positions']
-        writer.writerow(header)
-        for read, possible_genes_list in sample_colocalizations.items():
-            for genes_list in possible_genes_list:
-                row = list()
-                row.append(read)
-                # ARG
-                arg = ""
-                arg_position = ""
-                for gene in genes_list:
-                    if gene[2] == 'amr':
-                        arg = gene[0]
-                        arg_position = "{}:{}".format(gene[1][0], gene[1][1])
+    csvfile = sys.stdout
+    writer = csv.writer(csvfile)
+    header = ['read', 'ARG', 'ARG positions', 'MGE(s)', 'MGE(s) positions', 'KEGG(s)', 'KEGG(s) positions']
+    writer.writerow(header)
+    for read, possible_genes_list in sample_colocalizations.items():
+        for genes_list in possible_genes_list:
+            row = list()
+            row.append(read)
+            # ARG
+            arg = ""
+            arg_position = ""
+            for gene in genes_list:
+                if gene[2] == 'amr':
+                    arg = gene[0]
+                    arg_position = "{}:{}".format(gene[1][0], gene[1][1])
 
-                # Mges
-                mges = ""
-                mges_positions = ""
-                for gene in genes_list:
-                    if gene[2] == 'mge':
-                        if mges != "":
-                            mges += ';'
-                            mges_positions += ';'
-                        mges += gene[0]
-                        mges_positions += "{}:{}".format(gene[1][0], gene[1][1])
+            # Mges
+            mges = ""
+            mges_positions = ""
+            for gene in genes_list:
+                if gene[2] == 'mge':
+                    if mges != "":
+                        mges += ';'
+                        mges_positions += ';'
+                    mges += gene[0]
+                    mges_positions += "{}:{}".format(gene[1][0], gene[1][1])
 
-                # Kegg
-                keggs = ""
-                keggs_positions = ""
-                for gene in genes_list:
-                    if gene[2] == 'kegg':
-                        if keggs != "":
-                            keggs += ';'
-                            keggs_positions += ';'
-                        keggs += gene[0]
-                        keggs_positions += "{}:{}".format(gene[1][0], gene[1][1])
+            # Kegg
+            keggs = ""
+            keggs_positions = ""
+            for gene in genes_list:
+                if gene[2] == 'kegg':
+                    if keggs != "":
+                        keggs += ';'
+                        keggs_positions += ';'
+                    keggs += gene[0]
+                    keggs_positions += "{}:{}".format(gene[1][0], gene[1][1])
 
-                row.extend([arg, arg_position, mges, mges_positions, keggs, keggs_positions])
-                writer.writerow(row)
+            row.extend([arg, arg_position, mges, mges_positions, keggs, keggs_positions])
+            writer.writerow(row)
 
 
 if __name__ == "__main__":

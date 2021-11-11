@@ -1,4 +1,4 @@
-from src.common import *
+from common import *
 
 from Bio import SeqIO
 
@@ -88,8 +88,8 @@ def main():
                 num_singletons += 1
                 dedup_records.append(record)
 
-    with sys.stdout as out_handle:
-        SeqIO.write(dedup_records, out_handle, "fastq")
+    out_handle = sys.stdout
+    SeqIO.write(dedup_records, out_handle, "fastq")
 
 if __name__ == "__main__":
     main()
