@@ -210,6 +210,19 @@ def gen_colocalizations_richness(config, TELS_statistcs):
     )
     execute_command(colocalizations_richness_command, out_file_path=out_file)
 
+def print_statistics(config, TELS_statistics):
+    with open('{}/{}_stats.csv'.format(config['OUTPUT']['OUTPUT_DIR'], config['INPUT']['INPUT_FILE_NAME_EXT'])) as stats_csv_file:
+        stats_writer = csv.writer(stats_csv_file)
+        header = ['Metric', 'Value']
+        stats_writer.writerow(header)
+
+        line = ['READS_BEFORE_DEDUPLICATION', TELS_statistics['READS_BEFORE_DEDUPLICATION']]
+        stats_writer.writerow(line)
+        line = ['READS_AFTER_DEDUPLICATION', TELS_statistics['READS_AFTER_DEDUPLICATION']]
+        stats_writer.writerow(line)
+        line = ['READS_AFTER_DEDUPLICATION_PERC', TELS_statistics['READS_AFTER_DEDUPLICATION_PERC']]
+        stats_writer.writerow(line)
+
 
 def main():
     parser = argparse.ArgumentParser(description='Colocalizations Pipeline')
@@ -290,6 +303,8 @@ def main():
         root_logger.info("Generating Colocalizations")
         gen_colocalizations(config, TELS_statistcs)
         gen_colocalizations_richness(config, TELS_statistcs)
+
+
 
 
 if __name__ == "__main__":
