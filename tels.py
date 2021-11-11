@@ -217,8 +217,9 @@ def print_statistics(config, TELS_statistics):
         stats_writer.writerow(header)
 
         for stat_name, stat_value in TELS_statistics.items():
-            line = [stat_name, stat_value]
-            stats_writer.writerow(line)
+            if (stat_name != 'READ_LENGTHS'):
+                line = [stat_name, stat_value]
+                stats_writer.writerow(line)
 
 
 def main():
