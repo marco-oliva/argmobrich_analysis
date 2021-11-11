@@ -250,7 +250,7 @@ def main():
     TELS_statistcs['READS_AFTER_DEDUPLICATION'] = 0
 
     with open(config['INPUT']['INPUT_FILE'], 'r') as reads_file_handle:
-        for record in SeqIO.parse(reads_file_handle, "fasta"):
+        for record in SeqIO.parse(reads_file_handle, read_file_type(config['INPUT']['INPUT_FILE'])):
             read_len = len(record.seq)
             TELS_statistcs['READS_BEFORE_DEDUPLICATION'] += 1
             TELS_statistcs['READ_LENGTHS'][record.name] = read_len

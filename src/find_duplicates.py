@@ -27,16 +27,7 @@ def main():
     output_dir = args.out_dir
     num_clusters = args.num_clusters
 
-    fastq_extensions = ['fastq', 'fq', 'FASTQ', 'FQ', 'fq.gz', 'fastq.gz', 'FQ.gz', 'FASTQ.gz']
-    fasta_extensions = ['fasta', 'fa', 'FASTA', 'FA', 'fa.gz', 'fasta.gz', 'FA.gz', 'FASTA.gz']
-
-    file_type = ''
-    for p_ext in fastq_extensions:
-        if (reads_file.endswith(p_ext)):
-            file_type = 'fastq'
-    for p_ext in fasta_extensions:
-        if (reads_file.endswith(p_ext)):
-            file_type = 'fasta'
+    file_type = read_file_type(reads_file)
 
     if file_type == '':
         root_logger.info('File has to be either fastq or fasta')

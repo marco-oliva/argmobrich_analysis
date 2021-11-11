@@ -72,3 +72,16 @@ def init_logger():
     root_logger.addHandler(handler)
 
     return root_logger
+
+def read_file_type(reads_file):
+    fastq_extensions = ['fastq', 'fq', 'FASTQ', 'FQ', 'fq.gz', 'fastq.gz', 'FQ.gz', 'FASTQ.gz']
+    fasta_extensions = ['fasta', 'fa', 'FASTA', 'FA', 'fa.gz', 'fasta.gz', 'FA.gz', 'FASTA.gz']
+
+    file_type = ''
+    for p_ext in fastq_extensions:
+        if (reads_file.endswith(p_ext)):
+            file_type = 'fastq'
+    for p_ext in fasta_extensions:
+        if (reads_file.endswith(p_ext)):
+            file_type = 'fasta'
+    return file_type
