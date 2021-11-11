@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 from Bio import SeqIO
-import pysam
 import statistics
+from scipy.stats import kurtosis
+from scipy.stats import skew
 
 from src.common import *
 
@@ -216,8 +217,6 @@ def gen_colocalizations_richness(config, TELS_statistcs):
         TELS_statistcs['ARG_ON_TARGET_READ_LENGTH_RANGE'] = str((min(arg_read_lengths), max(arg_read_lengths)))
         TELS_statistcs['ARG_ON_TARGET_READ_LENGTH_STD_DEV'] = str(statistics.stdev(arg_read_lengths))
         TELS_statistcs['ARG_ON_TARGET_READ_LENGTH_VARIANCE'] = str(statistics.variance(arg_read_lengths))
-        from scipy.stats import kurtosis
-        from scipy.stats import skew
         TELS_statistcs['ARG_ON_TARGET_READ_LENGTH_SKEW'] = str(skew(arg_read_lengths))
         TELS_statistcs['ARG_ON_TARGET_READ_LENGTH_KURTOSIS'] = str(kurtosis(arg_read_lengths))
 
@@ -277,6 +276,17 @@ def main():
             TELS_statistcs['READS_BEFORE_DEDUPLICATION'] += 1
             TELS_statistcs['READ_LENGTHS'][record.name] = read_len
         root_logger.info("Reads befgore deduplication {}".format(TELS_statistcs['READS_BEFORE_DEDUPLICATION']))
+        read_lengths = list(TELS_statistcs['READ_LENGTHS'].values())
+        TELS_statistcs['READ_LENGTH_MEAN'] = str(statistics.mean(read_lengths))
+        TELS_statistcs['READ_LENGTH_MEDIAN'] = str(statistics.median(read_lengths))
+        TELS_statistcs['READ_LENGTH_RANGE'] = str((min(read_lengths), max(read_lengths)))
+        TELS_statistcs['READ_LENGTH_STD_DEV'] = str(statistics.stdev(read_lengths))
+        TELS_statistcs['READ_LENGTH_VARIANCE'] = str(statistics.variance(read_lengths))
+        TELS_statistcs['READ_LENGTH_SKEW'] = str(skew(read_lengths))
+        TELS_statistcs['READ_LENGTH_KURTOSIS'] = str(kurtosis(read_lengths))
+
+
+
 
     if config['PIPELINE_STEPS']['DEDUPLICATE'] in ['True', 'true']:
         root_logger.info("Deduplicating: Finding duplicates")
