@@ -272,10 +272,13 @@ def main():
         find_duplicates(config, TELS_statistcs)
         root_logger.info("Deduplicating: Filtering duplicates")
         deduplicate(config, TELS_statistcs)
-        args.input_path = args.output_dir_path + '/' + args.input_path + config['EXTENSION']['DEDUPLICATED']
-        with open(config['INPUT']['INPUT_FILE'], 'r') as reads_file_handle:
-            for record in SeqIO.parse(reads_file_handle, "fasta"):
-                TELS_statistcs['READS_AFTER_DEDUPLICATION'] += 1
+    else:
+        deduped_file = config['OUTPUT']['OUT_DIR'] + '/' + config['INPUT']['INPUT_FILE_NAME_EXT'] + config['EXTENSION']['DEDUPLICATED']
+        if (os.path.isfile(deduped_file)):
+            TELS_statistcs['READS_AFTER_DEDUPLICATION'] = sum(1 for record in SeqIO.parse(open(deduped_file, 'r'), read_file_type(deduped_file)))
+            TELS_statistcs['READS_AFTER_DEDUPLICATION_PERC'] = (float(TELS_statistcs['READS_AFTER_DEDUPLICATION']) / float(TELS_statistcs['READS_BEFORE_DEDUPLICATION'])) * 100
+
+
 
     if config['PIPELINE_STEPS']['ALIGN_TO_MEGARES'] in ['True', 'true']:
         root_logger.info("Aligning to Megares")
