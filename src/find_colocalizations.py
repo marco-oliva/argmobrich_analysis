@@ -8,6 +8,7 @@ import csv
 import argparse
 import gzip
 import logging
+import itertools
 
 def populate_megares_ontology(config):
     hierarchy_dict = {}
@@ -232,15 +233,15 @@ def get_colocalizations(config, reads_file_path, to_megares_path, to_aclme_path,
 
             amr_genes_concatenated = ''
             if len(amr_genes_list) > 0:
-                amr_genes_concatenated = ';'.join(amr_genes_list)
+                amr_genes_concatenated = ';'.join(list(itertools.chain(*amr_genes_list)))
 
             mge_genes_concatenated = ''
             if len(mge_genes_list) > 0:
-                mge_genes_concatenated = ';'.join(mge_genes_list)
+                mge_genes_concatenated = ';'.join(list(itertools.chain(*mge_genes_list)))
 
             kegg_genes_concatenated = ''
             if len(kegg_genes_list) > 0:
-                kegg_genes_concatenated = ';'.join(kegg_genes_list)
+                kegg_genes_concatenated = ';'.join(list(itertools.chain(*kegg_genes_list)))
 
             row = [read, amr_genes_concatenated, mge_genes_concatenated, kegg_genes_concatenated]
             writer.writerow(row)
