@@ -204,8 +204,8 @@ def gen_colocalizations_richness(config, TELS_statistcs):
         for row in reader:
             read_name  = row[0]
             amr_genes  = row[1].split(';')
-            mge_genes  = row[2].split(';')
-            kegg_genes = row[3].split(';')
+            mge_genes  = row[3].split(';')
+            kegg_genes = row[5].split(';')
 
             if (len(amr_genes) > 0):
                 arg_read_lengths.append(TELS_statistcs['READ_LENGTHS'][read_name])
