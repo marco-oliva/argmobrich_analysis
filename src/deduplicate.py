@@ -102,7 +102,7 @@ def main():
             dedup_records.append(record)
 
     out_handle = sys.stdout
-    SeqIO.write(dedup_records, out_handle, "fastq")
+    SeqIO.write(dedup_records, out_handle, "fasta")
 
 if __name__ == "__main__":
     main()
