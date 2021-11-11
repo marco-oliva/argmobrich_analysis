@@ -209,16 +209,16 @@ def gen_colocalizations_richness(config, TELS_statistcs):
 
             if (len(amr_genes) > 0):
                 arg_read_lengths.append(TELS_statistcs['READ_LENGTHS'][read_name])
-
-    TELS_statistcs['N_ARG_ON_TARGET_READS'] = str(len(arg_read_lengths))
-    TELS_statistcs['ARG_ON_TARGET_READ_LENGTH_MEAN'] = str(statistics.mean(arg_read_lengths))
-    TELS_statistcs['ARG_ON_TARGET_READ_LENGTH_RANGE'] = str((min(arg_read_lengths), max(arg_read_lengths)))
-    TELS_statistcs['ARG_ON_TARGET_READ_LENGTH_STD_DEV'] = str(statistics.stdev(arg_read_lengths))
-    TELS_statistcs['ARG_ON_TARGET_READ_LENGTH_VARIANCE'] = str(statistics.variance(arg_read_lengths))
-    from scipy.stats import kurtosis
-    from scipy.stats import skew
-    TELS_statistcs['ARG_ON_TARGET_READ_LENGTH_SKEW'] = str(skew(arg_read_lengths))
-    TELS_statistcs['ARG_ON_TARGET_READ_LENGTH_KURTOSIS'] = str(kurtosis(arg_read_lengths))
+    if len(arg_read_lengths) > 0:
+        TELS_statistcs['N_ARG_ON_TARGET_READS'] = str(len(arg_read_lengths))
+        TELS_statistcs['ARG_ON_TARGET_READ_LENGTH_MEAN'] = str(statistics.mean(arg_read_lengths))
+        TELS_statistcs['ARG_ON_TARGET_READ_LENGTH_RANGE'] = str((min(arg_read_lengths), max(arg_read_lengths)))
+        TELS_statistcs['ARG_ON_TARGET_READ_LENGTH_STD_DEV'] = str(statistics.stdev(arg_read_lengths))
+        TELS_statistcs['ARG_ON_TARGET_READ_LENGTH_VARIANCE'] = str(statistics.variance(arg_read_lengths))
+        from scipy.stats import kurtosis
+        from scipy.stats import skew
+        TELS_statistcs['ARG_ON_TARGET_READ_LENGTH_SKEW'] = str(skew(arg_read_lengths))
+        TELS_statistcs['ARG_ON_TARGET_READ_LENGTH_KURTOSIS'] = str(kurtosis(arg_read_lengths))
 
 def print_statistics(config, TELS_statistics):
     with open('{}/{}_stats.csv'.format(config['OUTPUT']['OUT_DIR'], config['INPUT']['INPUT_FILE_NAME_EXT']), 'w') as stats_csv_file:
