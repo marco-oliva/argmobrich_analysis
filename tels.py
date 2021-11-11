@@ -94,7 +94,7 @@ def align_to_kegg(config, TELS_statistcs):
     return out_file
 
 
-def align_to_mges(config, fastq_file_path, out_dir):
+def align_to_mges(config, TELS_statistcs):
     aligner_exe = config['TOOLS']['ALIGNER']
     aligner_flags = config['TOOLS']['ALIGNER_FLAGS']
     aligner_flags = aligner_flags + config['TOOLS']['ALINGER_PB_OPTION']
