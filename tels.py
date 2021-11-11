@@ -45,6 +45,9 @@ def align_to_megares(config, TELS_statistcs):
     aligner_flags = aligner_flags + config['TOOLS']['ALIGNER_HIFI_OPTION']
 
     megares_path = config['DATABASE']['MEGARES']
+    megares_gene_lengths = dict() # This should not be here
+    for rec in SeqIO.parse(megares_path, "fasta"):
+        megares_gene_lengths[rec.name] = len(rec.seq)
 
     mkdir_p(config['OUTPUT']['OUT_DIR'])
     out_file = config['OUTPUT']['OUT_DIR'] + '/' + config['INPUT']['INPUT_FILE_NAME_EXT'] + config['EXTENSION']['A_TO_MEGARES']
@@ -54,24 +57,6 @@ def align_to_megares(config, TELS_statistcs):
         db=megares_path,
         i_file=config['INPUT']['INPUT_FILE'])
     execute_command(align_command, out_file_path=out_file)
-
-    alignment_file = pysam.AlignmentFile(out_file)
-    TELS_statistcs['ARG_ON_TARGET_READS'] = 0
-    arg_read_lengths = list()
-    for record in alignment_file.fetch():
-        if not record.is_unmapped and not record.is_secondary:
-            TELS_statistcs['ARG_ON_TARGET_READS'] += 1
-            arg_read_lengths.append(TELS_statistcs['READ_LENGTHS'][record.query_name])
-
-    TELS_statistcs['N_ARG_ON_TARGET_READS'] = str(len(arg_read_lengths))
-    TELS_statistcs['ARG_ON_TARGET_READ_LENGTH_MEAN'] = str(statistics.mean(arg_read_lengths))
-    TELS_statistcs['ARG_ON_TARGET_READ_LENGTH_RANGE'] = str((min(arg_read_lengths), max(arg_read_lengths)))
-    TELS_statistcs['ARG_ON_TARGET_READ_LENGTH_STD_DEV'] = str(statistics.stdev(arg_read_lengths))
-    TELS_statistcs['ARG_ON_TARGET_READ_LENGTH_VARIANCE'] = str(statistics.variance(arg_read_lengths))
-    from scipy.stats import kurtosis
-    from scipy.stats import skew
-    TELS_statistcs['ARG_ON_TARGET_READ_LENGTH_SKEW'] = str(skew(arg_read_lengths))
-    TELS_statistcs['ARG_ON_TARGET_READ_LENGTH_KURTOSIS'] = str(kurtosis(arg_read_lengths))
 
 
 def align_to_kegg(config, TELS_statistcs):
@@ -210,6 +195,31 @@ def gen_colocalizations_richness(config, TELS_statistcs):
     )
     execute_command(colocalizations_richness_command, out_file_path=out_file)
 
+    arg_read_lengths = list()
+    TELS_statistcs['N_ARG_ON_TARGET_READS'] = 0
+    genes_list_csvs = config['OUTPUT']['OUT_DIR'] + '/' + config['INPUT']['INPUT_FILE_NAME_EXT'] + config['EXTENSION']['GENES_LIST']
+    with open(genes_list_csvs, 'r') as genes_list_csv_handler:
+        reader = csv.reader(genes_list_csv_handler)
+        header = next(reader)
+        for row in reader:
+            read_name  = row[0]
+            amr_genes  = row[1].split(';')
+            mge_genes  = row[2].split(';')
+            kegg_genes = row[3].split(';')
+
+            if (len(amr_genes) > 0):
+                arg_read_lengths.append(TELS_statistcs['READ_LENGTHS'][read_name])
+
+    TELS_statistcs['N_ARG_ON_TARGET_READS'] = str(len(arg_read_lengths))
+    TELS_statistcs['ARG_ON_TARGET_READ_LENGTH_MEAN'] = str(statistics.mean(arg_read_lengths))
+    TELS_statistcs['ARG_ON_TARGET_READ_LENGTH_RANGE'] = str((min(arg_read_lengths), max(arg_read_lengths)))
+    TELS_statistcs['ARG_ON_TARGET_READ_LENGTH_STD_DEV'] = str(statistics.stdev(arg_read_lengths))
+    TELS_statistcs['ARG_ON_TARGET_READ_LENGTH_VARIANCE'] = str(statistics.variance(arg_read_lengths))
+    from scipy.stats import kurtosis
+    from scipy.stats import skew
+    TELS_statistcs['ARG_ON_TARGET_READ_LENGTH_SKEW'] = str(skew(arg_read_lengths))
+    TELS_statistcs['ARG_ON_TARGET_READ_LENGTH_KURTOSIS'] = str(kurtosis(arg_read_lengths))
+
 def print_statistics(config, TELS_statistics):
     with open('{}/{}_stats.csv'.format(config['OUTPUT']['OUT_DIR'], config['INPUT']['INPUT_FILE_NAME_EXT']), 'w') as stats_csv_file:
         stats_writer = csv.writer(stats_csv_file)
@@ -281,8 +291,6 @@ def main():
             config['INPUT']['INPUT_FILE_NAME_NO_EXT'] = os.path.splitext(config['INPUT']['INPUT_FILE_NAME_EXT'])[0]
             config['INPUT']['INPUT_FILE_PATH'] = os.path.dirname(os.path.abspath(deduped_file))
             config['INPUT']['INPUT_FILE'] = os.path.join(config['INPUT']['INPUT_FILE_PATH'], config['INPUT']['INPUT_FILE_NAME_EXT'])
-
-
 
     if config['PIPELINE_STEPS']['ALIGN_TO_MEGARES'] in ['True', 'true']:
         root_logger.info("Aligning to Megares")

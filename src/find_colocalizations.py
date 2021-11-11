@@ -199,31 +199,39 @@ def get_colocalizations(config, reads_file_path, to_megares_path, to_aclme_path,
                             [read.query_alignment_start, read.query_alignment_end])
                         read_to_mges[mge_db_name][read.query_name].append(read.reference_name)
 
-                        # Get all possible valid colocalizations
     genes_lists = dict()
-    for read, amr_list in read_to_amr.items():
-        # Amr genes list
-        amr_genes_list = list()
-        for idx, amr_name in enumerate(amr_list):
-            amr_genes_list.append([amr_name, amr_positions[read][idx], 'amr'])
+    genes_list_csvs = config['OUTPUT']['OUT_DIR'] + '/' + config['INPUT']['INPUT_FILE_NAME_EXT'] + config['EXTENSION']['GENES_LIST']
+    with open(genes_list_csvs, 'w') as genes_list_handle:
+        writer = csv.writer(genes_list_handle)
+        header = ['Read Name', 'AMR Genes', 'MGE Genes', 'KEGG genes']
+        writer.writerow(header)
 
-        # Kegg genes list
-        kegg_genes_list = list()
-        if (read in read_to_kegg):
-            for idx, kegg_name in enumerate(read_to_kegg[read]):
-                kegg_genes_list.append([kegg_name, kegg_positions[read][idx], 'kegg'])
+        for read, amr_list in read_to_amr.items():
+            # Amr genes list
+            amr_genes_list = list()
+            for idx, amr_name in enumerate(amr_list):
+                amr_genes_list.append([amr_name, amr_positions[read][idx], 'amr'])
 
-        # MGE genes list
-        mge_genes_list = list()
-        for db_name, read_to_mge_db in read_to_mges.items():
-            if (read in read_to_mge_db):
-                for idx, mge_name in enumerate(read_to_mge_db[read]):
-                    mge_genes_list.append([mge_name, mge_positions[db_name][read][idx], 'mge'])
+            # Kegg genes list
+            kegg_genes_list = list()
+            if (read in read_to_kegg):
+                for idx, kegg_name in enumerate(read_to_kegg[read]):
+                    kegg_genes_list.append([kegg_name, kegg_positions[read][idx], 'kegg'])
 
-        genes_lists[read] = list()
-        genes_lists[read].extend(amr_genes_list)
-        genes_lists[read].extend(kegg_genes_list)
-        genes_lists[read].extend(mge_genes_list)
+            # MGE genes list
+            mge_genes_list = list()
+            for db_name, read_to_mge_db in read_to_mges.items():
+                if (read in read_to_mge_db):
+                    for idx, mge_name in enumerate(read_to_mge_db[read]):
+                        mge_genes_list.append([mge_name, mge_positions[db_name][read][idx], 'mge'])
+
+            genes_lists[read] = list()
+            genes_lists[read].extend(amr_genes_list)
+            genes_lists[read].extend(kegg_genes_list)
+            genes_lists[read].extend(mge_genes_list)
+
+            row = [read, ';'.join(amr_genes_list), ';'.join(mge_genes_list), ';'.join(kegg_genes_list)]
+            writer.writerow(row)
 
     # Candidate colocalizations
     candidate_colocalizations = {k: v for k, v in genes_lists.items() if len(v) >= 2}
