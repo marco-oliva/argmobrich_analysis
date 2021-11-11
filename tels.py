@@ -212,6 +212,7 @@ def gen_colocalizations_richness(config, TELS_statistcs):
     if len(arg_read_lengths) > 0:
         TELS_statistcs['N_ARG_ON_TARGET_READS'] = str(len(arg_read_lengths))
         TELS_statistcs['ARG_ON_TARGET_READ_LENGTH_MEAN'] = str(statistics.mean(arg_read_lengths))
+        TELS_statistcs['ARG_ON_TARGET_READ_LENGTH_MEDIAN'] = str(statistics.median(arg_read_lengths))
         TELS_statistcs['ARG_ON_TARGET_READ_LENGTH_RANGE'] = str((min(arg_read_lengths), max(arg_read_lengths)))
         TELS_statistcs['ARG_ON_TARGET_READ_LENGTH_STD_DEV'] = str(statistics.stdev(arg_read_lengths))
         TELS_statistcs['ARG_ON_TARGET_READ_LENGTH_VARIANCE'] = str(statistics.variance(arg_read_lengths))
