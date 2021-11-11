@@ -211,7 +211,7 @@ def gen_colocalizations_richness(config, TELS_statistcs):
     execute_command(colocalizations_richness_command, out_file_path=out_file)
 
 def print_statistics(config, TELS_statistics):
-    with open('{}/{}_stats.csv'.format(config['OUTPUT']['OUTPUT_DIR'], config['INPUT']['INPUT_FILE_NAME_EXT'])) as stats_csv_file:
+    with open('{}/{}_stats.csv'.format(config['OUTPUT']['OUT_DIR'], config['INPUT']['INPUT_FILE_NAME_EXT'])) as stats_csv_file:
         stats_writer = csv.writer(stats_csv_file)
         header = ['Metric', 'Value']
         stats_writer.writerow(header)
