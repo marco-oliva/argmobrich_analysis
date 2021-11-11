@@ -230,7 +230,19 @@ def get_colocalizations(config, reads_file_path, to_megares_path, to_aclme_path,
             genes_lists[read].extend(kegg_genes_list)
             genes_lists[read].extend(mge_genes_list)
 
-            row = [read, ';'.join(amr_genes_list), ';'.join(mge_genes_list), ';'.join(kegg_genes_list)]
+            amr_genes_concatenated = ''
+            if len(amr_genes_list) > 0:
+                amr_genes_concatenated = ';'.join(amr_genes_list)
+
+            mge_genes_concatenated = ''
+            if len(mge_genes_list) > 0:
+                mge_genes_concatenated = ';'.join(mge_genes_list)
+
+            kegg_genes_concatenated = ''
+            if len(kegg_genes_list) > 0:
+                kegg_genes_concatenated = ';'.join(kegg_genes_list)
+
+            row = [read, amr_genes_concatenated, mge_genes_concatenated, kegg_genes_concatenated]
             writer.writerow(row)
 
     # Candidate colocalizations
