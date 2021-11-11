@@ -304,7 +304,7 @@ def main():
         gen_colocalizations(config, TELS_statistcs)
         gen_colocalizations_richness(config, TELS_statistcs)
 
-
+    print_statistics(config, TELS_statistcs)
 
 
 if __name__ == "__main__":
