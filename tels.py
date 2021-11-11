@@ -216,12 +216,9 @@ def print_statistics(config, TELS_statistics):
         header = ['Metric', 'Value']
         stats_writer.writerow(header)
 
-        line = ['READS_BEFORE_DEDUPLICATION', TELS_statistics['READS_BEFORE_DEDUPLICATION']]
-        stats_writer.writerow(line)
-        line = ['READS_AFTER_DEDUPLICATION', TELS_statistics['READS_AFTER_DEDUPLICATION']]
-        stats_writer.writerow(line)
-        line = ['READS_AFTER_DEDUPLICATION_PERC', TELS_statistics['READS_AFTER_DEDUPLICATION_PERC']]
-        stats_writer.writerow(line)
+        for stat_name, stat_value in TELS_statistics.items():
+            line = [stat_name, stat_value]
+            stats_writer.writerow(line)
 
 
 def main():
