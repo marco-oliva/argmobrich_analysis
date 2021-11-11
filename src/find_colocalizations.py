@@ -233,7 +233,7 @@ def get_colocalizations(config, reads_file_path, to_megares_path, to_aclme_path,
 
             amr_genes_concatenated = list()
             amr_genes_concatenated.extend(amr_genes_list)
-            print(amr_genes_concatenated)
+            logger.info(amr_genes_concatenated)
             if len(amr_genes_concatenated) > 0:
                 amr_genes_concatenated_str = ';'.join(amr_genes_concatenated)
 
