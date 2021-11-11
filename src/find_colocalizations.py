@@ -200,7 +200,7 @@ def get_colocalizations(config, reads_file_path, to_megares_path, to_aclme_path,
                         read_to_mges[mge_db_name][read.query_name].append(read.reference_name)
 
     genes_lists = dict()
-    genes_list_csvs = config['OUTPUT']['OUT_DIR'] + '/' + config['INPUT']['INPUT_FILE_NAME_EXT'] + config['EXTENSION']['GENES_LIST']
+    genes_list_csvs = reads_file_path + config['EXTENSION']['GENES_LIST']
     with open(genes_list_csvs, 'w') as genes_list_handle:
         writer = csv.writer(genes_list_handle)
         header = ['Read Name', 'AMR Genes', 'MGE Genes', 'KEGG genes']
