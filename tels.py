@@ -20,9 +20,6 @@ def find_duplicates(config, TELS_statistcs):
         clusters=config['MISC']['DEDUP_CLUSTERS'],
         threads=config['MISC']['HELPER_THREADS'])
     execute_command(command, out_file_path=out_file)
-    TELS_statistcs['READS_AFTER_DEDUPLICATION'] = sum(1 for line in open(out_file))
-    TELS_statistcs['READS_AFTER_DEDUPLICATION_PERC'] = (float(TELS_statistcs['READS_AFTER_DEDUPLICATION']) / float(TELS_statistcs['READS_BEFORE_DEDUPLICATION'])) * 100
-
 
 def deduplicate(config, TELS_statistcs):
     out_file = config['OUTPUT']['OUT_DIR'] + '/' + config['INPUT']['INPUT_FILE_NAME_EXT'] + config['EXTENSION']['DEDUPLICATED']
@@ -35,6 +32,9 @@ def deduplicate(config, TELS_statistcs):
     config['INPUT']['INPUT_FILE_NAME_NO_EXT'] = os.path.splitext(config['INPUT']['INPUT_FILE_NAME_EXT'])[0]
     config['INPUT']['INPUT_FILE_PATH'] = os.path.dirname(os.path.abspath(out_file))
     config['INPUT']['INPUT_FILE'] = os.path.join(config['INPUT']['INPUT_FILE_PATH'], config['INPUT']['INPUT_FILE_NAME_EXT'])
+
+    TELS_statistcs['READS_AFTER_DEDUPLICATION'] = sum(1 for record in SeqIO.parse(open(out_file, 'r'), read_file_type(out_file)))
+    TELS_statistcs['READS_AFTER_DEDUPLICATION_PERC'] = (float(TELS_statistcs['READS_AFTER_DEDUPLICATION']) / float(TELS_statistcs['READS_BEFORE_DEDUPLICATION'])) * 100
 
 
 def align_to_megares(config, TELS_statistcs):
