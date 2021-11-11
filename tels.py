@@ -9,30 +9,28 @@ def find_duplicates(config, TELS_statistcs):
     tmp_dir = config['OUTPUT']['OUT_DIR'] + '/tmp_files'
     mkdir_p(tmp_dir)
     out_file = config['OUTPUT']['OUT_DIR'] + '/' + config['INPUT']['INPUT_FILE_NAME_EXT'] + config['EXTENSION']['DUPLICATES']
-    command = 'python {find_duplicates_exe} -r {in_file} -o {out_dir} -t {threads} -n {clusters}'.format(
-        find_duplicates_exe=config['SCRIPTS']['FIND_DUPLICATES'],
+    command = 'python {script} -r {in_file} -o {out_dir} -t {threads} -n {clusters}'.format(
+        script=config['SCRIPTS']['FIND_DUPLICATES'],
         in_file=config['INPUT']['INPUT_FILE'],
         out_dir=tmp_dir,
         clusters=config['MISC']['DEDUP_CLUSTERS'],
         threads=config['MISC']['HELPER_THREADS'])
     execute_command(command, out_file_path=out_file)
-    remove(tmp_dir)
     TELS_statistcs['READS_AFTER_DEDUPLICATION'] = sum(1 for line in open(out_file))
-    TELS_statistcs['READS_AFTER_DEDUPLICATION_PERC'] = (float(TELS_statistcs['READS_AFTER_DEDUPLICATION']) / float(
-        TELS_statistcs['READS_BEFORE_DEDUPLICATION'])) * 100
+    TELS_statistcs['READS_AFTER_DEDUPLICATION_PERC'] = (float(TELS_statistcs['READS_AFTER_DEDUPLICATION']) / float(TELS_statistcs['READS_BEFORE_DEDUPLICATION'])) * 100
 
 
 def deduplicate(config, TELS_statistcs):
     out_file = config['OUTPUT']['OUT_DIR'] + '/' + config['INPUT']['INPUT_FILE_NAME_EXT'] + config['EXTENSION']['DEDUPLICATED']
-    command = 'python {deduplicate_exe} -d {duplicates_csv} -r {in_file}'.format(
-        deduplicate_exe=config['SCRIPTS']['DEDUPLICATE'],
+    command = 'python {script} -d {duplicates_csv} -r {in_file}'.format(
+        script=config['SCRIPTS']['DEDUPLICATE'],
         duplicates_csv=config['OUTPUT']['OUT_DIR'] + '/' + config['INPUT']['INPUT_FILE_NAME_EXT'] + config['EXTENSION']['DUPLICATES'],
         in_file=config['INPUT']['INPUT_FILE'])
     execute_command(command, out_file_path=out_file)
     config['INPUT']['INPUT_FILE_NAME_EXT'] = os.path.basename(out_file)
     config['INPUT']['INPUT_FILE_NAME_NO_EXT'] = os.path.splitext(config['INPUT']['INPUT_FILE_NAME_EXT'])[0]
     config['INPUT']['INPUT_FILE_PATH'] = os.path.dirname(os.path.abspath(out_file))
-    config['INPUT']['INPUT_FILE'] = os.path.join(config['INPUT']['INPUT_FILE_PATH'], onfig['INPUT']['INPUT_FILE_NAME_EXT'])
+    config['INPUT']['INPUT_FILE'] = os.path.join(config['INPUT']['INPUT_FILE_PATH'], config['INPUT']['INPUT_FILE_NAME_EXT'])
 
 
 def align_to_megares(config, TELS_statistcs):
