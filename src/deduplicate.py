@@ -67,26 +67,39 @@ def main():
         frozen_sets.append(frozen_set)
         set_deduplicated[frozen_set] = False
 
+    file_type = read_file_type(fastq_with_dups)
+
+    if file_type == '':
+        root_logger.info('File has to be either fastq or fasta')
+        exit()
+
+    if (fastq_with_dups.endswith('.gz')):
+        root_logger.info('Opening gzipped file')
+        file_handler = gzip.open(fastq_with_dups, 'rt')
+    else:
+        root_logger.info('Opening uncompressed file')
+        file_handler = open(fastq_with_dups, 'rt')
+
+
     dedup_records = []
     set_sizes = []
     num_singletons = 0
-    with gzip.open(fastq_with_dups, "rt") as fastq_with_dups_handle:
-        for record in SeqIO.parse(fastq_with_dups_handle, "fastq"):
-            record_in_set = False
-            for dup_set in frozen_sets:
-                if record.id in dup_set:
-                    record_in_set = True
-                    curr_record_set = dup_set
-                    break
+    for record in SeqIO.parse(file_handler, file_type):
+        record_in_set = False
+        for dup_set in frozen_sets:
+            if record.id in dup_set:
+                record_in_set = True
+                curr_record_set = dup_set
+                break
 
-            if record_in_set:
-                if not set_deduplicated[curr_record_set]:
-                    dedup_records.append(record)
-                    set_sizes.append(len(curr_record_set))
-                    set_deduplicated[curr_record_set] = True
-            else:  # Singletons are not in the set csv
-                num_singletons += 1
+        if record_in_set:
+            if not set_deduplicated[curr_record_set]:
                 dedup_records.append(record)
+                set_sizes.append(len(curr_record_set))
+                set_deduplicated[curr_record_set] = True
+        else:  # Singletons are not in the set csv
+            num_singletons += 1
+            dedup_records.append(record)
 
     out_handle = sys.stdout
     SeqIO.write(dedup_records, out_handle, "fastq")
