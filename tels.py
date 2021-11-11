@@ -6,6 +6,10 @@ import statistics
 from src.common import *
 
 def find_duplicates(config, TELS_statistcs):
+    import shutil
+    if shutil.which('blat') is None:
+        logging.getLogger().info("blat missing, needed for deduplication")
+        exit(1)
     tmp_dir = config['OUTPUT']['OUT_DIR'] + '/tmp_files'
     mkdir_p(tmp_dir)
     out_file = config['OUTPUT']['OUT_DIR'] + '/' + config['INPUT']['INPUT_FILE_NAME_EXT'] + config['EXTENSION']['DUPLICATES']
