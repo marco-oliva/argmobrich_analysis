@@ -8,6 +8,7 @@ import argparse
 import subprocess
 import gzip
 import csv
+import numpy as np
 
 
 # ------------------------------------------------------------
@@ -85,3 +86,9 @@ def read_file_type(reads_file):
         if (reads_file.endswith(p_ext)):
             file_type = 'fasta'
     return file_type
+
+def reject_outliers(data, m = 2.):
+    d = np.abs(data - np.median(data))
+    mdev = np.median(d)
+    s = d/mdev if mdev else 0.
+    return data[s<m]
