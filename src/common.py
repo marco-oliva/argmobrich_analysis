@@ -88,6 +88,7 @@ def read_file_type(reads_file):
     return file_type
 
 def reject_outliers(data, m = 2.):
+    data = np.array(data)
     d = np.abs(data - np.median(data))
     mdev = np.median(d)
     s = d/mdev if mdev else 0.
