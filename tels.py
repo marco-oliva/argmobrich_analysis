@@ -211,14 +211,15 @@ def gen_colocalizations_richness(config, TELS_statistcs):
             if (len(amr_genes) > 0):
                 arg_read_lengths.append(TELS_statistcs['READ_LENGTHS'][read_name])
     if len(arg_read_lengths) > 0:
-        TELS_statistcs['N_ARG_ON_TARGET_READS'] = str(len(arg_read_lengths))
-        TELS_statistcs['ARG_ON_TARGET_READ_LENGTH_MEAN'] = str(statistics.mean(arg_read_lengths))
-        TELS_statistcs['ARG_ON_TARGET_READ_LENGTH_MEDIAN'] = str(statistics.median(arg_read_lengths))
-        TELS_statistcs['ARG_ON_TARGET_READ_LENGTH_RANGE'] = str((min(arg_read_lengths), max(arg_read_lengths)))
-        TELS_statistcs['ARG_ON_TARGET_READ_LENGTH_STD_DEV'] = str(statistics.stdev(arg_read_lengths))
-        TELS_statistcs['ARG_ON_TARGET_READ_LENGTH_VARIANCE'] = str(statistics.variance(arg_read_lengths))
-        TELS_statistcs['ARG_ON_TARGET_READ_LENGTH_SKEW'] = str(skew(arg_read_lengths))
-        TELS_statistcs['ARG_ON_TARGET_READ_LENGTH_KURTOSIS'] = str(kurtosis(arg_read_lengths))
+        filtered_arg_read_lengths = reject_outliers(arg_read_lengths)
+        TELS_statistcs['N_ARG_ON_TARGET_READS'] = str(len(filtered_arg_read_lengths))
+        TELS_statistcs['ARG_ON_TARGET_READ_LENGTH_MEAN'] = str(statistics.mean(filtered_arg_read_lengths))
+        TELS_statistcs['ARG_ON_TARGET_READ_LENGTH_MEDIAN'] = str(statistics.median(filtered_arg_read_lengths))
+        TELS_statistcs['ARG_ON_TARGET_READ_LENGTH_RANGE'] = str((min(filtered_arg_read_lengths), max(filtered_arg_read_lengths)))
+        TELS_statistcs['ARG_ON_TARGET_READ_LENGTH_STD_DEV'] = str(statistics.stdev(filtered_arg_read_lengths))
+        TELS_statistcs['ARG_ON_TARGET_READ_LENGTH_VARIANCE'] = str(statistics.variance(filtered_arg_read_lengths))
+        TELS_statistcs['ARG_ON_TARGET_READ_LENGTH_SKEW'] = str(skew(filtered_arg_read_lengths))
+        TELS_statistcs['ARG_ON_TARGET_READ_LENGTH_KURTOSIS'] = str(kurtosis(filtered_arg_read_lengths))
 
 def print_statistics(config, TELS_statistics):
     with open('{}/{}_stats.csv'.format(config['OUTPUT']['OUT_DIR'], config['INPUT']['INPUT_FILE_NAME_EXT']), 'w') as stats_csv_file:
@@ -277,16 +278,14 @@ def main():
             TELS_statistcs['READ_LENGTHS'][record.name] = read_len
         root_logger.info("Reads befgore deduplication {}".format(TELS_statistcs['READS_BEFORE_DEDUPLICATION']))
         read_lengths = list(TELS_statistcs['READ_LENGTHS'].values())
-        TELS_statistcs['READ_LENGTH_MEAN'] = str(statistics.mean(read_lengths))
-        TELS_statistcs['READ_LENGTH_MEDIAN'] = str(statistics.median(read_lengths))
-        TELS_statistcs['READ_LENGTH_RANGE'] = str((min(read_lengths), max(read_lengths)))
-        TELS_statistcs['READ_LENGTH_STD_DEV'] = str(statistics.stdev(read_lengths))
-        TELS_statistcs['READ_LENGTH_VARIANCE'] = str(statistics.variance(read_lengths))
-        TELS_statistcs['READ_LENGTH_SKEW'] = str(skew(read_lengths))
-        TELS_statistcs['READ_LENGTH_KURTOSIS'] = str(kurtosis(read_lengths))
-
-
-
+        filtered_read_lenghts = reject_outliers(read_lengths)
+        TELS_statistcs['READ_LENGTH_MEAN'] = str(statistics.mean(filtered_read_lenghts))
+        TELS_statistcs['READ_LENGTH_MEDIAN'] = str(statistics.median(filtered_read_lenghts))
+        TELS_statistcs['READ_LENGTH_RANGE'] = str((min(filtered_read_lenghts), max(filtered_read_lenghts)))
+        TELS_statistcs['READ_LENGTH_STD_DEV'] = str(statistics.stdev(filtered_read_lenghts))
+        TELS_statistcs['READ_LENGTH_VARIANCE'] = str(statistics.variance(filtered_read_lenghts))
+        TELS_statistcs['READ_LENGTH_SKEW'] = str(skew(filtered_read_lenghts))
+        TELS_statistcs['READ_LENGTH_KURTOSIS'] = str(kurtosis(filtered_read_lenghts))
 
     if config['PIPELINE_STEPS']['DEDUPLICATE'] in ['True', 'true']:
         root_logger.info("Deduplicating: Finding duplicates")
