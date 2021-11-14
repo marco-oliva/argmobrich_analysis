@@ -9,6 +9,7 @@ import argparse
 import gzip
 import logging
 import itertools
+from operator import itemgetter
 
 def populate_megares_ontology(config):
     hierarchy_dict = {}
@@ -53,13 +54,8 @@ def populate_megares_ontology(config):
 
 
 # Check if valid alignements
-def not_overlapping(intervals_list, left_boundary=0, right_boundary=0):
+def not_overlapping(intervals_list):
     sorted_intervals = sorted(intervals_list)
-
-    if sorted_intervals[0][0] < left_boundary:
-        return False
-    if sorted_intervals[-1][1] > right_boundary:
-        return False
 
     curr_right_lim = 0
     for interval in sorted_intervals:
@@ -267,22 +263,38 @@ def get_colocalizations(config, reads_file_path, to_megares_path, to_aclme_path,
         if (read not in reads_length):
             logger.error("{} not in read lengths.".format(read))
             continue
-        for i in range(1, len(candidate_colocalization_list)):
-            for coloc in itertools.combinations(candidate_colocalization_list[1:], i):
-                intervals = list()
-                intervals.append(candidate_colocalization_list[0][1])
-                for gene in coloc:
-                    intervals.append(gene[1])
 
-                if not_overlapping(intervals, skip_begin, reads_length[read] - (skip_end + 1)):
-                    if read not in colocalizations:
-                        colocalizations[read] = list()
-                    colocalization = list()
-                    colocalization.append(candidate_colocalization_list[0])
-                    colocalization.extend(coloc)
+        has_ARG = False
+        has_MGE = False
+        colocalization = list()
+        sorted_candidate_coloc_list = sorted(candidate_colocalization_list, key=lambda x: x[0])
 
-                    colocalization.sort(key=lambda x: x[1][0])
-                    colocalizations[read].append(colocalization)
+        # First take all the non-overlapping ARGS
+        for idx, aligned_gene in enumerate(sorted_candidate_coloc_list):
+            if aligned_gene[2] == 'amr':
+                if len(colocalization) == 0 or aligned_gene[1][0] > colocalization[-1][1][1]:
+                    colocalization.append(aligned_gene)
+                    has_ARG = True
+
+        # Now fit all non overlapping mges
+        for idx, aligned_gene in enumerate(sorted_candidate_coloc_list):
+            if aligned_gene[2] == 'mge':
+                ti_coloc = [c[1] for c in colocalization]
+                ti_coloc.append(aligned_gene[1])
+                if not_overlapping(ti_coloc):
+                    colocalization.append(aligned_gene)
+                    has_MGE = True
+
+        # Finally fit all non overlapping genes from Kegg
+        for idx, aligned_gene in enumerate(sorted_candidate_coloc_list):
+            if aligned_gene[2] == 'kegg':
+                ti_coloc = [c[1] for c in colocalization]
+                ti_coloc.append(aligned_gene[1])
+                if not_overlapping(ti_coloc):
+                    colocalization.append(aligned_gene)
+
+        if has_ARG and has_MGE:
+            colocalizations[read] = colocalization
 
     arg_set = set()
     for read, args_list in read_to_amr.items():
@@ -344,42 +356,41 @@ def main():
     writer = csv.writer(csvfile)
     header = ['read', 'ARG', 'ARG positions', 'MGE(s)', 'MGE(s) positions', 'KEGG(s)', 'KEGG(s) positions']
     writer.writerow(header)
-    for read, possible_genes_list in sample_colocalizations.items():
-        for genes_list in possible_genes_list:
-            row = list()
-            row.append(read)
-            # ARG
-            arg = ""
-            arg_position = ""
-            for gene in genes_list:
-                if gene[2] == 'amr':
-                    arg = gene[0]
-                    arg_position = "{}:{}".format(gene[1][0], gene[1][1])
+    for read, colocalization in sample_colocalizations.items():
+        row = list()
+        row.append(read)
+        # ARG
+        arg = ""
+        arg_position = ""
+        for gene in colocalization:
+            if gene[2] == 'amr':
+                arg = gene[0]
+                arg_position = "{}:{}".format(gene[1][0], gene[1][1])
 
-            # Mges
-            mges = ""
-            mges_positions = ""
-            for gene in genes_list:
-                if gene[2] == 'mge':
-                    if mges != "":
-                        mges += ';'
-                        mges_positions += ';'
-                    mges += gene[0]
-                    mges_positions += "{}:{}".format(gene[1][0], gene[1][1])
+        # Mges
+        mges = ""
+        mges_positions = ""
+        for gene in colocalization:
+            if gene[2] == 'mge':
+                if mges != "":
+                    mges += ';'
+                    mges_positions += ';'
+                mges += gene[0]
+                mges_positions += "{}:{}".format(gene[1][0], gene[1][1])
 
-            # Kegg
-            keggs = ""
-            keggs_positions = ""
-            for gene in genes_list:
-                if gene[2] == 'kegg':
-                    if keggs != "":
-                        keggs += ';'
-                        keggs_positions += ';'
-                    keggs += gene[0]
-                    keggs_positions += "{}:{}".format(gene[1][0], gene[1][1])
+        # Kegg
+        keggs = ""
+        keggs_positions = ""
+        for gene in colocalization:
+            if gene[2] == 'kegg':
+                if keggs != "":
+                    keggs += ';'
+                    keggs_positions += ';'
+                keggs += gene[0]
+                keggs_positions += "{}:{}".format(gene[1][0], gene[1][1])
 
-            row.extend([arg, arg_position, mges, mges_positions, keggs, keggs_positions])
-            writer.writerow(row)
+        row.extend([arg, arg_position, mges, mges_positions, keggs, keggs_positions])
+        writer.writerow(row)
 
 
 if __name__ == "__main__":

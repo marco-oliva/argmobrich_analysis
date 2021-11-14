@@ -52,11 +52,13 @@ def align_to_megares(config, TELS_statistcs):
 
     mkdir_p(config['OUTPUT']['OUT_DIR'])
     out_file = config['OUTPUT']['OUT_DIR'] + '/' + config['INPUT']['INPUT_FILE_NAME_EXT'] + config['EXTENSION']['A_TO_MEGARES']
-    align_command = '{exe} {flags} {db} {i_file}'.format(
+    align_command = '{exe} {flags} {db} {i_file} -t {threads}'.format(
         exe=aligner_exe,
         flags=aligner_flags,
         db=megares_path,
-        i_file=config['INPUT']['INPUT_FILE'])
+        i_file=config['INPUT']['INPUT_FILE'],
+        threads=config['MISC']['HELPER_THREADS']
+    )
     execute_command(align_command, out_file_path=out_file)
 
 
@@ -71,11 +73,13 @@ def align_to_kegg(config, TELS_statistcs):
 
     mkdir_p(config['OUTPUT']['OUT_DIR'])
     out_file = config['OUTPUT']['OUT_DIR'] + '/' + config['INPUT']['INPUT_FILE_NAME_EXT'] + config['EXTENSION']['A_TO_KEGG']
-    align_command = '{exe} {flags} {db} {i_file}'.format(
+    align_command = '{exe} {flags} {db} {i_file} -t {threads}'.format(
         exe=aligner_exe,
         flags=aligner_flags,
         db=kegg_path,
-        i_file=config['INPUT']['INPUT_FILE'])
+        i_file=config['INPUT']['INPUT_FILE'],
+        threads=config['MISC']['HELPER_THREADS']
+    )
     execute_command(align_command, out_file_path=out_file)
     return out_file
 
@@ -94,27 +98,33 @@ def align_to_mges(config, TELS_statistcs):
     mkdir_p(config['OUTPUT']['OUT_DIR'])
 
     out_file = config['OUTPUT']['OUT_DIR'] + '/' + config['INPUT']['INPUT_FILE_NAME_EXT'] + config['EXTENSION']['A_TO_PLASMIDS']
-    align_command = '{exe} {flags} {db} {i_file}'.format(
+    align_command = '{exe} {flags} {db} {i_file} -t {threads}'.format(
         exe=aligner_exe,
         flags=aligner_flags,
         db=plasmids_path,
-        i_file=config['INPUT']['INPUT_FILE'])
+        i_file=config['INPUT']['INPUT_FILE'],
+        threads=config['MISC']['HELPER_THREADS']
+    )
     execute_command(align_command, out_file_path=out_file)
 
     out_file = config['OUTPUT']['OUT_DIR'] + '/' + config['INPUT']['INPUT_FILE_NAME_EXT'] + config['EXTENSION']['A_TO_ACLAME']
-    align_command = '{exe} {flags} {db} {i_file}'.format(
+    align_command = '{exe} {flags} {db} {i_file} -t {threads}'.format(
         exe=aligner_exe,
         flags=aligner_flags,
         db=aclame_path,
-        i_file=config['INPUT']['INPUT_FILE'])
+        i_file=config['INPUT']['INPUT_FILE'],
+        threads=config['MISC']['HELPER_THREADS']
+    )
     execute_command(align_command, out_file_path=out_file)
 
     out_file = config['OUTPUT']['OUT_DIR'] + '/' + config['INPUT']['INPUT_FILE_NAME_EXT'] + config['EXTENSION']['A_TO_ICEBERG']
-    align_command = '{exe} {flags} {db} {i_file}'.format(
+    align_command = '{exe} {flags} {db} {i_file} -t {threads}'.format(
         exe=aligner_exe,
         flags=aligner_flags,
         db=iceberg_path,
-        i_file=config['INPUT']['INPUT_FILE'])
+        i_file=config['INPUT']['INPUT_FILE'],
+        threads=config['MISC']['HELPER_THREADS']
+    )
     execute_command(align_command, out_file_path=out_file)
 
 
