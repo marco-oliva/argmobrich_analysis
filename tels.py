@@ -282,9 +282,9 @@ def main():
     TELS_statistcs['READS_AFTER_DEDUPLICATION'] = 0
 
     if config['INPUT']['INPUT_FILE'].endswith('.gz'):
-        reads_file_handle = gzip.open(config['INPUT']['INPUT_FILE'], 'r')
+        reads_file_handle = gzip.open(config['INPUT']['INPUT_FILE'], 'rt')
     else:
-        reads_file_handle = open(config['INPUT']['INPUT_FILE'], 'r')
+        reads_file_handle = open(config['INPUT']['INPUT_FILE'], 'rt')
 
     for record in SeqIO.parse(reads_file_handle, read_file_type(config['INPUT']['INPUT_FILE'])):
         read_len = len(record.seq)
