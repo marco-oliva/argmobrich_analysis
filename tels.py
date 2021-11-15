@@ -177,7 +177,8 @@ def gen_colocalizations(config, TELS_statistcs):
         skip_end = config['MISC']['V2_SKIP_END']
 
     find_colocalizations_command = 'python {script} -p {sam_plasmids} -a {sam_aclame} -i {sam_iceberg} -k {sam_kegg}' \
-                                   ' -m {sam_megares} -r {reads} -e {skip_end} -b {skip_begin} -c {config_file}'.format(
+                                   ' -m {sam_megares} -r {reads} -e {skip_end} -b {skip_begin} ' \
+                                   '-c {config_file} -o {out_dir}'.format(
         script=gen_colocalizations_script,
         sam_plasmids=sam_file_plasmids,
         sam_aclame=sam_file_aclame,
@@ -187,7 +188,8 @@ def gen_colocalizations(config, TELS_statistcs):
         skip_begin=skip_begin,
         reads=config['INPUT']['INPUT_FILE'],
         skip_end=skip_end,
-        config_file=config['MISC']['CONFIG_FILE']
+        config_file=config['MISC']['CONFIG_FILE'],
+        out_dir=config['OUTPUT']['OUT_DIR']
     )
     execute_command(find_colocalizations_command, out_file_path=out_file)
 

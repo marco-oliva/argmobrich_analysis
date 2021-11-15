@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import configparser
+import os
 import sys
 from Bio import SeqIO
 import pysam
@@ -325,10 +326,20 @@ def main():
     parser.add_argument('-e', help='Skip n bases at the end of the read', dest='skip_end', default=0, type=int)
     parser.add_argument('-b', help='Skip n bases at the beginning of the read', dest='skip_begin', default=0, type=int)
     parser.add_argument('-c', help='Config file', dest='config_path', required=True)
+    parser.add_argument('-o', help='Output directory', dest='output_dir_path', required=True)
     args = parser.parse_args()
 
     config = configparser.ConfigParser()
     config.read(args.config_path)
+
+    config['INPUT'] = dict()
+    config['INPUT']['INPUT_FILE_NAME_EXT'] = os.path.basename(args.reads_file)
+    config['INPUT']['INPUT_FILE_NAME_NO_EXT'] = os.path.splitext(config['INPUT']['INPUT_FILE_NAME_EXT'])[0]
+    config['INPUT']['INPUT_FILE_PATH'] = os.path.dirname(os.path.abspath(args.reads_file))
+    config['INPUT']['INPUT_FILE'] = os.path.join(config['INPUT']['INPUT_FILE_PATH'],
+                                                 config['INPUT']['INPUT_FILE_NAME_EXT'])
+    config['OUTPUT'] = dict()
+    config['OUTPUT']['OUT_DIR'] = os.path.abspath(args.output_dir_path)
 
     root_logger = logging.getLogger()
     root_logger.setLevel(logging.DEBUG)
