@@ -281,21 +281,28 @@ def main():
     TELS_statistcs['READS_BEFORE_DEDUPLICATION'] = 0
     TELS_statistcs['READS_AFTER_DEDUPLICATION'] = 0
 
-    with open(config['INPUT']['INPUT_FILE'], 'r') as reads_file_handle:
-        for record in SeqIO.parse(reads_file_handle, read_file_type(config['INPUT']['INPUT_FILE'])):
-            read_len = len(record.seq)
-            TELS_statistcs['READS_BEFORE_DEDUPLICATION'] += 1
-            TELS_statistcs['READ_LENGTHS'][record.name] = read_len
-        root_logger.info("Reads befgore deduplication {}".format(TELS_statistcs['READS_BEFORE_DEDUPLICATION']))
-        read_lengths = list(TELS_statistcs['READ_LENGTHS'].values())
-        #filtered_read_lenghts = reject_outliers(read_lengths)
-        TELS_statistcs['READ_LENGTH_MEAN'] = str(statistics.mean(read_lengths))
-        TELS_statistcs['READ_LENGTH_MEDIAN'] = str(statistics.median(read_lengths))
-        TELS_statistcs['READ_LENGTH_RANGE'] = str((min(read_lengths), max(read_lengths)))
-        TELS_statistcs['READ_LENGTH_STD_DEV'] = str(statistics.stdev(read_lengths))
-        TELS_statistcs['READ_LENGTH_VARIANCE'] = str(statistics.variance(read_lengths))
-        TELS_statistcs['READ_LENGTH_SKEW'] = str(skew(read_lengths))
-        TELS_statistcs['READ_LENGTH_KURTOSIS'] = str(kurtosis(read_lengths))
+    if config['INPUT']['INPUT_FILE'].endswith('.gz'):
+        reads_file_handle = gzip.open(config['INPUT']['INPUT_FILE'], 'r')
+    else:
+        reads_file_handle = open(config['INPUT']['INPUT_FILE'], 'r')
+
+    for record in SeqIO.parse(reads_file_handle, read_file_type(config['INPUT']['INPUT_FILE'])):
+        read_len = len(record.seq)
+        TELS_statistcs['READS_BEFORE_DEDUPLICATION'] += 1
+        TELS_statistcs['READ_LENGTHS'][record.name] = read_len
+
+    reads_file_handle.close()
+    root_logger.info("Reads befgore deduplication {}".format(TELS_statistcs['READS_BEFORE_DEDUPLICATION']))
+
+    read_lengths = list(TELS_statistcs['READ_LENGTHS'].values())
+    TELS_statistcs['READ_LENGTH_MEAN'] = str(statistics.mean(read_lengths))
+    TELS_statistcs['READ_LENGTH_MEDIAN'] = str(statistics.median(read_lengths))
+    TELS_statistcs['READ_LENGTH_RANGE'] = str((min(read_lengths), max(read_lengths)))
+    TELS_statistcs['READ_LENGTH_STD_DEV'] = str(statistics.stdev(read_lengths))
+    TELS_statistcs['READ_LENGTH_VARIANCE'] = str(statistics.variance(read_lengths))
+    TELS_statistcs['READ_LENGTH_SKEW'] = str(skew(read_lengths))
+    TELS_statistcs['READ_LENGTH_KURTOSIS'] = str(kurtosis(read_lengths))
+
 
     if config['PIPELINE_STEPS']['DEDUPLICATE'] in ['True', 'true']:
         root_logger.info("Deduplicating: Finding duplicates")
