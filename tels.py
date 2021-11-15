@@ -227,12 +227,13 @@ def gen_colocalizations_richness(config, TELS_statistcs):
         TELS_statistcs['ARG_ON_TARGET_READ_LENGTH_MEAN'] = str(statistics.mean(arg_read_lengths))
         TELS_statistcs['ARG_ON_TARGET_READ_LENGTH_MEDIAN'] = str(statistics.median(arg_read_lengths))
         TELS_statistcs['ARG_ON_TARGET_READ_LENGTH_RANGE'] = str((min(arg_read_lengths), max(arg_read_lengths)))
-        TELS_statistcs['ARG_ON_TARGET_READ_LENGTH_STD_DEV'] = str(statistics.stdev(arg_read_lengths))
         if len(arg_read_lengths) >= 2:
+            TELS_statistcs['ARG_ON_TARGET_READ_LENGTH_STD_DEV'] = str(statistics.stdev(arg_read_lengths))
             TELS_statistcs['ARG_ON_TARGET_READ_LENGTH_VARIANCE'] = str(statistics.variance(arg_read_lengths))
             TELS_statistcs['ARG_ON_TARGET_READ_LENGTH_SKEW'] = str(skew(arg_read_lengths))
             TELS_statistcs['ARG_ON_TARGET_READ_LENGTH_KURTOSIS'] = str(kurtosis(arg_read_lengths))
         else:
+            TELS_statistcs['ARG_ON_TARGET_READ_LENGTH_STD_DEV'] = 0
             TELS_statistcs['ARG_ON_TARGET_READ_LENGTH_VARIANCE'] = 0
             TELS_statistcs['ARG_ON_TARGET_READ_LENGTH_SKEW'] = 0
             TELS_statistcs['ARG_ON_TARGET_READ_LENGTH_KURTOSIS'] = 0
@@ -304,12 +305,13 @@ def main():
     TELS_statistcs['READ_LENGTH_MEAN'] = str(statistics.mean(read_lengths))
     TELS_statistcs['READ_LENGTH_MEDIAN'] = str(statistics.median(read_lengths))
     TELS_statistcs['READ_LENGTH_RANGE'] = str((min(read_lengths), max(read_lengths)))
-    TELS_statistcs['READ_LENGTH_STD_DEV'] = str(statistics.stdev(read_lengths))
     if len(read_lengths) >= 2:
+        TELS_statistcs['READ_LENGTH_STD_DEV'] = str(statistics.stdev(read_lengths))
         TELS_statistcs['READ_LENGTH_VARIANCE'] = str(statistics.variance(read_lengths))
         TELS_statistcs['READ_LENGTH_SKEW'] = str(skew(read_lengths))
         TELS_statistcs['READ_LENGTH_KURTOSIS'] = str(kurtosis(read_lengths))
     else:
+        TELS_statistcs['READ_LENGTH_STD_DEV'] = 0
         TELS_statistcs['READ_LENGTH_VARIANCE'] = 0
         TELS_statistcs['READ_LENGTH_SKEW'] = 0
         TELS_statistcs['READ_LENGTH_KURTOSIS'] = 0
