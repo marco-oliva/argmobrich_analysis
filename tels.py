@@ -45,9 +45,9 @@ def deduplicate(config, TELS_statistcs):
 def align_to_megares(config, TELS_statistcs):
     aligner_exe = config['TOOLS']['ALIGNER']
     aligner_flags = config['TOOLS']['ALIGNER_FLAGS']
-    aligner_flags = aligner_flags + config['TOOLS']['ALINGER_PB_OPTION']
-    aligner_flags = aligner_flags + config['TOOLS']['ALIGNER_ONT_OPTION']
-    aligner_flags = aligner_flags + config['TOOLS']['ALIGNER_HIFI_OPTION']
+    aligner_flags = aligner_flags + ' ' + config['TOOLS']['ALINGER_PB_OPTION']
+    aligner_flags = aligner_flags + ' ' + config['TOOLS']['ALIGNER_ONT_OPTION']
+    aligner_flags = aligner_flags + ' ' + config['TOOLS']['ALIGNER_HIFI_OPTION']
 
     megares_path = config['DATABASE']['MEGARES']
     megares_gene_lengths = dict() # This should not be here
@@ -69,9 +69,9 @@ def align_to_megares(config, TELS_statistcs):
 def align_to_kegg(config, TELS_statistcs):
     aligner_exe = config['TOOLS']['ALIGNER']
     aligner_flags = config['TOOLS']['ALIGNER_FLAGS']
-    aligner_flags = aligner_flags + config['TOOLS']['ALINGER_PB_OPTION']
-    aligner_flags = aligner_flags + config['TOOLS']['ALIGNER_ONT_OPTION']
-    aligner_flags = aligner_flags + config['TOOLS']['ALIGNER_HIFI_OPTION']
+    aligner_flags = aligner_flags + ' ' + config['TOOLS']['ALINGER_PB_OPTION']
+    aligner_flags = aligner_flags + ' ' + config['TOOLS']['ALIGNER_ONT_OPTION']
+    aligner_flags = aligner_flags + ' ' + config['TOOLS']['ALIGNER_HIFI_OPTION']
 
     kegg_path = config['DATABASE']['KEGG']
 
@@ -91,9 +91,9 @@ def align_to_kegg(config, TELS_statistcs):
 def align_to_mges(config, TELS_statistcs):
     aligner_exe = config['TOOLS']['ALIGNER']
     aligner_flags = config['TOOLS']['ALIGNER_FLAGS']
-    aligner_flags = aligner_flags + config['TOOLS']['ALINGER_PB_OPTION']
-    aligner_flags = aligner_flags + config['TOOLS']['ALIGNER_ONT_OPTION']
-    aligner_flags = aligner_flags + config['TOOLS']['ALIGNER_HIFI_OPTION']
+    aligner_flags = aligner_flags + ' ' + config['TOOLS']['ALINGER_PB_OPTION']
+    aligner_flags = aligner_flags + ' ' + config['TOOLS']['ALIGNER_ONT_OPTION']
+    aligner_flags = aligner_flags + ' ' + config['TOOLS']['ALIGNER_HIFI_OPTION']
 
     mges_path = config['DATABASE']['MGES']
 
