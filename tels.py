@@ -34,7 +34,11 @@ def deduplicate(config, TELS_statistcs):
     config['INPUT']['INPUT_FILE_PATH'] = os.path.dirname(os.path.abspath(out_file))
     config['INPUT']['INPUT_FILE'] = os.path.join(config['INPUT']['INPUT_FILE_PATH'], config['INPUT']['INPUT_FILE_NAME_EXT'])
 
-    TELS_statistcs['READS_AFTER_DEDUPLICATION'] = sum(1 for record in SeqIO.parse(open(out_file, 'r'), read_file_type(out_file)))
+    if is_gz_file(out_file):
+        deduplicate_file_handler = gzip.open(out_file, 'rt')
+    else:
+        deduplicate_file_handler = open(out_file, 'rt')
+    TELS_statistcs['READS_AFTER_DEDUPLICATION'] = sum(1 for record in SeqIO.parse(deduplicate_file_handler, "fastq"))
     TELS_statistcs['READS_AFTER_DEDUPLICATION_PERC'] = (float(TELS_statistcs['READS_AFTER_DEDUPLICATION']) / float(TELS_statistcs['READS_BEFORE_DEDUPLICATION'])) * 100
 
 
@@ -288,12 +292,12 @@ def main():
     TELS_statistcs['READS_BEFORE_DEDUPLICATION'] = 0
     TELS_statistcs['READS_AFTER_DEDUPLICATION'] = 0
 
-    if config['INPUT']['INPUT_FILE'].endswith('.gz'):
+    if is_gz_file(config['INPUT']['INPUT_FILE']):
         reads_file_handle = gzip.open(config['INPUT']['INPUT_FILE'], 'rt')
     else:
         reads_file_handle = open(config['INPUT']['INPUT_FILE'], 'rt')
 
-    for record in SeqIO.parse(reads_file_handle, read_file_type(config['INPUT']['INPUT_FILE'])):
+    for record in SeqIO.parse(reads_file_handle, "fastq"):
         read_len = len(record.seq)
         TELS_statistcs['READS_BEFORE_DEDUPLICATION'] += 1
         TELS_statistcs['READ_LENGTHS'][record.name] = read_len
@@ -325,7 +329,13 @@ def main():
     else:
         deduped_file = config['OUTPUT']['OUT_DIR'] + '/' + config['INPUT']['INPUT_FILE_NAME_EXT'] + config['EXTENSION']['DEDUPLICATED']
         if (os.path.isfile(deduped_file)):
-            TELS_statistcs['READS_AFTER_DEDUPLICATION'] = sum(1 for record in SeqIO.parse(open(deduped_file, 'r'), read_file_type(deduped_file)))
+
+            if is_gz_file(deduped_file):
+                dedup_reads_file_handle = gzip.open(deduped_file, 'rt')
+            else:
+                dedup_reads_file_handle = open(deduped_file, 'rt')
+
+            TELS_statistcs['READS_AFTER_DEDUPLICATION'] = sum(1 for record in SeqIO.parse(dedup_reads_file_handle, "fastq"))
             TELS_statistcs['READS_AFTER_DEDUPLICATION_PERC'] = (float(TELS_statistcs['READS_AFTER_DEDUPLICATION']) / float(TELS_statistcs['READS_BEFORE_DEDUPLICATION'])) * 100
             config['INPUT']['INPUT_FILE_NAME_EXT'] = os.path.basename(deduped_file)
             config['INPUT']['INPUT_FILE_NAME_NO_EXT'] = os.path.splitext(config['INPUT']['INPUT_FILE_NAME_EXT'])[0]

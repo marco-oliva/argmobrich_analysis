@@ -1,9 +1,5 @@
 #!/usr/bin/env python3
-import csv
-import logging
-import sys
-import argparse
-import configparser
+from common import *
 
 #Essentially just a way to define equality/uniqueness
 class Colocalization:
@@ -72,28 +68,10 @@ def main():
     config = configparser.ConfigParser()
     config.read(args.config_path)
 
-    root_logger = logging.getLogger()
-    root_logger.setLevel(logging.DEBUG)
-
-    handler = logging.StreamHandler(sys.stderr)
-    handler.setLevel(logging.DEBUG)
-    formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-    handler.setFormatter(formatter)
-    root_logger.addHandler(handler)
-
-    root_logger.info("Opening {}".format(args.coloc_csv_path))
+    root_logger = init_logger()
 
     #Create ontology dictionary from MEGARes ontology file
-    megares_ontology = {}
-    with open(config['DATABASE']['MEGARES_ONTOLOGY'], 'r') as ontology_csv:
-        ontology_reader = csv.reader(ontology_csv)
-        header = next(ontology_reader)
-        for row in ontology_reader:
-            # FIll in our dict
-            megares_ontology[row[0]] = { "class"        : row[1],
-                                         "mechanism"    : row[2],
-                                         "group"        : row[3]
-                                       }
+    megares_ontology, _ = read_megares_ontology(config)
 
     colocs = []
     coloc_counts = {}

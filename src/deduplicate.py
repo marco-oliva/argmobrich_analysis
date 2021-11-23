@@ -67,24 +67,17 @@ def main():
         frozen_sets.append(frozen_set)
         set_deduplicated[frozen_set] = False
 
-    file_type = read_file_type(fastq_with_dups)
-
-    if file_type == '':
-        root_logger.info('File has to be either fastq or fasta')
-        exit()
-
-    if (fastq_with_dups.endswith('.gz')):
+    if (is_gz_file(fastq_with_dups)):
         root_logger.info('Opening gzipped file')
         file_handler = gzip.open(fastq_with_dups, 'rt')
     else:
         root_logger.info('Opening uncompressed file')
         file_handler = open(fastq_with_dups, 'rt')
 
-
     dedup_records = []
     set_sizes = []
     num_singletons = 0
-    for record in SeqIO.parse(file_handler, file_type):
+    for record in SeqIO.parse(file_handler, "fastq"):
         record_in_set = False
         for dup_set in frozen_sets:
             if record.id in dup_set:
@@ -101,6 +94,7 @@ def main():
             num_singletons += 1
             dedup_records.append(record)
 
+    file_handler.close()
     out_handle = sys.stdout
     SeqIO.write(dedup_records, out_handle, "fastq")
 

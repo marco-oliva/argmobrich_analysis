@@ -27,23 +27,16 @@ def main():
     output_dir = args.out_dir
     num_clusters = args.num_clusters
 
-    file_type = read_file_type(reads_file)
-
-    if file_type == '':
-        root_logger.info('File has to be either fastq or fasta')
-        exit()
-
     # Iterate through every read. Accumulate number of reads while recording read length
     read_lengths = ([], [])
-
-    if (reads_file.endswith('.gz')):
+    if (is_gz_file(reads_file)):
         root_logger.info('Opening gzipped file')
         file_handler = gzip.open(reads_file, 'rt')
     else:
         root_logger.info('Opening uncompressed file')
         file_handler = open(reads_file, 'rt')
 
-    for record in SeqIO.parse(file_handler, file_type):
+    for record in SeqIO.parse(file_handler, "fastq"):
         read_len = len(record.seq)
         read_lengths[0].append(read_len)
         read_lengths[1].append(record)
