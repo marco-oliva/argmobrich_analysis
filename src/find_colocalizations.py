@@ -5,24 +5,20 @@ import pysam
 import argparse
 from common import *
 
+
 # Check if valid alignements, expecting intervals to be sorted
 def not_overlapping(intervals_list):
-    logger = logging.getLogger()
-    intervals_sorted = all(intervals_list[i] <= intervals_list[i+1] for i in range(len(intervals_list)-1))
-    if not intervals_sorted:
-        logger.error("find_colocalizations.py::not_overlapping: Intervals list has to be sorted")
-        exit(1)
+    sorted_intervals = sorted(intervals_list)
 
     curr_right_lim = 0
-    for interval in intervals_list:
+    for interval in sorted_intervals:
         if interval[0] < curr_right_lim:
             return False
         curr_right_lim = interval[1]
     return True
 
 
-def get_colocalizations(config, reads_file_path, to_megares_path, to_aclme_path, to_iceberg_path, to_plasmids_path,
-                        to_kegg_path, skip_begin, skip_end):
+def get_colocalizations(config, reads_file_path, to_megares_path, to_mges_path, to_kegg_path):
     logger = logging.getLogger()
 
     # Get read lengths
@@ -45,24 +41,14 @@ def get_colocalizations(config, reads_file_path, to_megares_path, to_aclme_path,
     for rec in SeqIO.parse(megares_reference_fasta_filename, "fasta"):
         megares_gene_lengths[rec.name] = len(rec.seq)
 
-    # Get aclame, iceberg, and plasmid finder lengths for coverage
+    # Get MGEs lengths for coverage
     logger.info("Reading MGES DB")
     mge_gene_lengths = dict()
-    mge_gene_lengths['aclme'] = dict()
-    aclame_reference_fasta_filename = config['DATABASE']['ACLAME']
-    for rec in SeqIO.parse(aclame_reference_fasta_filename, "fasta"):
-        mge_gene_lengths['aclme'][rec.name] = len(rec.seq)
+    mges_reference_fasta_filename = config['DATABASE']['MGES']
+    for rec in SeqIO.parse(mges_reference_fasta_filename, "fasta"):
+        mge_gene_lengths[rec.name] = len(rec.seq)
 
-    mge_gene_lengths['iceberg'] = dict()
-    iceberg_reference_fasta_filename = config['DATABASE']['ICEBERG']
-    for rec in SeqIO.parse(iceberg_reference_fasta_filename, "fasta"):
-        mge_gene_lengths['iceberg'][rec.name] = len(rec.seq)
-
-    mge_gene_lengths['plasmids'] = dict()
-    plasmids_reference_fasta_filename = config['DATABASE']['PLASMIDS']
-    for rec in SeqIO.parse(plasmids_reference_fasta_filename, "fasta"):
-        mge_gene_lengths['plasmids'][rec.name] = len(rec.seq)
-
+    # Get KEGG lengths for coverage
     kegg_gene_lengths = dict()
     kegg_reference_fasta_filename = config['DATABASE']['KEGG']
     for rec in SeqIO.parse(kegg_reference_fasta_filename, "fasta"):
@@ -76,62 +62,73 @@ def get_colocalizations(config, reads_file_path, to_megares_path, to_aclme_path,
     amr_length = dict()
     with pysam.AlignmentFile(to_megares_path, "r") as to_megares_samfile:
         for read in to_megares_samfile:
-            if not read.is_unmapped and ((not read.is_secondary) and (not read.is_supplementary)):
-                # Check coverage
-                if (read.reference_length / (megares_gene_lengths[read.reference_name])) > float(config['MISC']['GLOBAL_AMR_THRESHOLD']):
-                    if read.query_name not in read_to_amr:
-                        read_to_amr[read.query_name] = list()
-                        amr_positions[read.query_name] = list()
-                    amr_positions[read.query_name].append([read.query_alignment_start, read.query_alignment_end])
-                    read_to_amr[read.query_name].append(read.reference_name)
+            if read.is_unmapped:
+                continue
 
-                    amr_length[read.reference_name] = megares_gene_lengths[read.reference_name]
+            if config['MISC']['USE_SECONDARY_ALIGNMENTS'] not in ['True', 'true'] and read.is_secondary:
+                continue
 
-                    if read.reference_name not in amr_to_generated_bases:
-                        amr_to_generated_bases[read.reference_name] = read.reference_length
-                    else:
-                        amr_to_generated_bases[read.reference_name] += read.reference_length
+            # Check coverage
+            if (read.reference_length / (megares_gene_lengths[read.reference_name])) > float(config['MISC']['GLOBAL_AMR_THRESHOLD']):
+                if read.query_name not in read_to_amr:
+                    read_to_amr[read.query_name] = list()
+                    amr_positions[read.query_name] = list()
+                amr_positions[read.query_name].append([read.query_alignment_start, read.query_alignment_end])
+                read_to_amr[read.query_name].append(read.reference_name)
+
+                amr_length[read.reference_name] = megares_gene_lengths[read.reference_name]
+
+                if read.reference_name not in amr_to_generated_bases:
+                    amr_to_generated_bases[read.reference_name] = read.reference_length
+                else:
+                    amr_to_generated_bases[read.reference_name] += read.reference_length
 
     # Open aligned to Kegg
-    logger.info("Reading MGES alignment files")
+    logger.info("Reading KEGG alignment files")
     kegg_positions = dict()
     read_to_kegg = dict()
     with pysam.AlignmentFile(to_kegg_path, "r") as to_kegg_samfile:
         for read in to_kegg_samfile:
-            if not read.is_unmapped:
-                # Check coverage
-                if (read.reference_length / (kegg_gene_lengths[read.reference_name])) > float(config['MISC']['GLOBAL_KEGG_THRESHOLD']):
-                    if read.query_name not in read_to_kegg:
-                        read_to_kegg[read.query_name] = list()
-                        kegg_positions[read.query_name] = list()
-                    kegg_positions[read.query_name].append([read.query_alignment_start, read.query_alignment_end])
-                    read_to_kegg[read.query_name].append(read.reference_name)
+            if read.is_unmapped:
+                continue
 
-    # Mobile elements dict
+            if config['MISC']['USE_SECONDARY_ALIGNMENTS'] not in ['True', 'true'] and read.is_secondary:
+                continue
+
+            # Check coverage
+            if (read.reference_length / (kegg_gene_lengths[read.reference_name])) > float(config['MISC']['GLOBAL_KEGG_THRESHOLD']):
+                if read.query_name not in read_to_kegg:
+                    read_to_kegg[read.query_name] = list()
+                    kegg_positions[read.query_name] = list()
+                kegg_positions[read.query_name].append([read.query_alignment_start, read.query_alignment_end])
+                read_to_kegg[read.query_name].append(read.reference_name)
+
+    # Open aligned to MGEs
+    logger.info("Reading MGEs alignment files")
     mge_positions = dict()
     read_to_mges = dict()
-    mge_alignment_files = {'aclme': to_aclme_path, 'iceberg': to_iceberg_path, 'plasmids': to_plasmids_path}
-    for mge_db_name, mge_alignment_file_path in mge_alignment_files.items():
-        mge_positions[mge_db_name] = dict()
-        read_to_mges[mge_db_name] = dict()
+    with pysam.AlignmentFile(to_mges_path, "r") as mge_alignment_file:
+        for read in mge_alignment_file:
+            if read.is_unmapped:
+                continue
 
-        with pysam.AlignmentFile(mge_alignment_file_path, "rb") as mge_alignment_file:
-            for read in mge_alignment_file:
-                if not read.is_unmapped:
+            if config['MISC']['USE_SECONDARY_ALIGNMENTS'] not in ['True', 'true'] and read.is_secondary:
+                continue
 
-                    # Check coverage
-                    gene_length = mge_gene_lengths[mge_db_name][read.reference_name]
+            # Check coverage
+            gene_length = mge_gene_lengths[read.reference_name]
 
-                    if (read.reference_length / gene_length) > float(config['MISC']['GLOBAL_MGE_THRESHOLD']):
-                        if read.query_name not in read_to_mges[mge_db_name]:
-                            read_to_mges[mge_db_name][read.query_name] = list()
-                            mge_positions[mge_db_name][read.query_name] = list()
-                        mge_positions[mge_db_name][read.query_name].append(
-                            [read.query_alignment_start, read.query_alignment_end])
-                        read_to_mges[mge_db_name][read.query_name].append(read.reference_name)
+            if (read.reference_length / gene_length) > float(config['MISC']['GLOBAL_MGE_THRESHOLD']):
+                if read.query_name not in read_to_mges:
+                    read_to_mges[read.query_name] = list()
+                    mge_positions[read.query_name] = list()
+                mge_positions[read.query_name].append(
+                    [read.query_alignment_start, read.query_alignment_end])
+                read_to_mges[read.query_name].append(read.reference_name)
 
     genes_lists = dict()
-    genes_list_csv = config['OUTPUT']['OUT_DIR'] + '/' + config['INPUT']['INPUT_FILE_NAME_EXT'] + config['EXTENSION']['GENES_LIST']
+    genes_list_csv = config['OUTPUT']['OUT_DIR'] + '/' + config['INPUT']['INPUT_FILE_NAME_EXT'] + config['EXTENSION'][
+        'GENES_LIST']
     logger.info("Writing per read genes list to {}".format(genes_list_csv))
     with open(genes_list_csv, 'w') as genes_list_handle:
         writer = csv.writer(genes_list_handle)
@@ -156,10 +153,9 @@ def get_colocalizations(config, reads_file_path, to_megares_path, to_aclme_path,
 
             # MGE genes list
             mge_genes_list = list()
-            for db_name, read_to_mge_db in read_to_mges.items():
-                if read in read_to_mge_db:
-                    for idx, mge_name in enumerate(read_to_mge_db[read]):
-                        mge_genes_list.append([mge_name, mge_positions[db_name][read][idx], 'mge'])
+            if read in read_to_mges:
+                for idx, mge_name in enumerate(read_to_mges[read]):
+                    mge_genes_list.append([mge_name, mge_positions[read][idx], 'mge'])
 
             genes_lists[read] = list()
             genes_lists[read].extend(amr_genes_list)
@@ -244,19 +240,16 @@ def get_colocalizations(config, reads_file_path, to_megares_path, to_aclme_path,
     logger.info("MGES: {}\tARGS: {}".format(len(mge_set), len(arg_set)))
     return arg_set, mge_set, colocalizations
 
+
 ############################################################
 # Compute values
 
 def main():
     parser = argparse.ArgumentParser(description='Colocalizations Finder.')
     parser.add_argument('-k', help='Kegg alignment file', dest='kegg_sam', required=True)
-    parser.add_argument('-p', help='Plasmids Finder alignment file', dest='plasmids_sam', required=True)
-    parser.add_argument('-i', help='Iceberg alignment file', dest='iceberg_sam', required=True)
-    parser.add_argument('-m', help='Megares alignment file', dest='megares_sam', required=True)
-    parser.add_argument('-a', help='ACLAME alignment file', dest='aclame_sam', required=True)
+    parser.add_argument('--arg', help='Megares alignment file', dest='megares_sam', required=True)
+    parser.add_argument('--mge', help='MGEs alignment file', dest='mges_sam', required=True)
     parser.add_argument('-r', help='Reads file', dest='reads_file', required=True)
-    parser.add_argument('-e', help='Skip n bases at the end of the read', dest='skip_end', default=0, type=int)
-    parser.add_argument('-b', help='Skip n bases at the beginning of the read', dest='skip_begin', default=0, type=int)
     parser.add_argument('-c', help='Config file', dest='config_path', required=True)
     parser.add_argument('-o', help='Output directory', dest='output_dir_path', required=True)
     args = parser.parse_args()
@@ -285,12 +278,8 @@ def main():
     amr_set, mge_set, sample_colocalizations = get_colocalizations(config,
                                                                    args.reads_file,
                                                                    args.megares_sam,
-                                                                   args.aclame_sam,
-                                                                   args.iceberg_sam,
-                                                                   args.plasmids_sam,
-                                                                   args.kegg_sam,
-                                                                   args.skip_begin,
-                                                                   args.skip_end)
+                                                                   args.mges_sam,
+                                                                   args.kegg_sam)
 
     logger = logging.getLogger()
     logger.info("Found {} reads with colocalizations".format(len(sample_colocalizations)))

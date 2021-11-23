@@ -95,42 +95,19 @@ def align_to_mges(config, TELS_statistcs):
     aligner_flags = aligner_flags + config['TOOLS']['ALIGNER_ONT_OPTION']
     aligner_flags = aligner_flags + config['TOOLS']['ALIGNER_HIFI_OPTION']
 
-    plasmids_path = config['DATABASE']['PLASMIDS']
-    aclame_path = config['DATABASE']['ACLAME']
-    iceberg_path = config['DATABASE']['ICEBERG']
+    mges_path = config['DATABASE']['MGES']
 
     mkdir_p(config['OUTPUT']['OUT_DIR'])
 
-    out_file = config['OUTPUT']['OUT_DIR'] + '/' + config['INPUT']['INPUT_FILE_NAME_EXT'] + config['EXTENSION']['A_TO_PLASMIDS']
+    out_file = config['OUTPUT']['OUT_DIR'] + '/' + config['INPUT']['INPUT_FILE_NAME_EXT'] + config['EXTENSION']['A_TO_MGES']
     align_command = '{exe} {flags} {db} {i_file} -t {threads}'.format(
         exe=aligner_exe,
         flags=aligner_flags,
-        db=plasmids_path,
+        db=mges_path,
         i_file=config['INPUT']['INPUT_FILE'],
         threads=config['MISC']['HELPER_THREADS']
     )
     execute_command(align_command, out_file_path=out_file)
-
-    out_file = config['OUTPUT']['OUT_DIR'] + '/' + config['INPUT']['INPUT_FILE_NAME_EXT'] + config['EXTENSION']['A_TO_ACLAME']
-    align_command = '{exe} {flags} {db} {i_file} -t {threads}'.format(
-        exe=aligner_exe,
-        flags=aligner_flags,
-        db=aclame_path,
-        i_file=config['INPUT']['INPUT_FILE'],
-        threads=config['MISC']['HELPER_THREADS']
-    )
-    execute_command(align_command, out_file_path=out_file)
-
-    out_file = config['OUTPUT']['OUT_DIR'] + '/' + config['INPUT']['INPUT_FILE_NAME_EXT'] + config['EXTENSION']['A_TO_ICEBERG']
-    align_command = '{exe} {flags} {db} {i_file} -t {threads}'.format(
-        exe=aligner_exe,
-        flags=aligner_flags,
-        db=iceberg_path,
-        i_file=config['INPUT']['INPUT_FILE'],
-        threads=config['MISC']['HELPER_THREADS']
-    )
-    execute_command(align_command, out_file_path=out_file)
-
 
 def gen_resistome(config, TELS_statistcs):
     gen_resistome_script = config['SCRIPTS']['GEN_RESISTOME']
@@ -148,17 +125,13 @@ def gen_resistome(config, TELS_statistcs):
 
 def gen_mobilome(config, TELS_statistcs):
     gen_mobilome_script = config['SCRIPTS']['GEN_MOBILOME']
-    sam_file_plasmids = config['OUTPUT']['OUT_DIR'] + '/' + config['INPUT']['INPUT_FILE_NAME_EXT'] + \
-                        config['EXTENSION']['A_TO_PLASMIDS']
-    sam_file_aclame = config['OUTPUT']['OUT_DIR'] + '/' + config['INPUT']['INPUT_FILE_NAME_EXT'] + config['EXTENSION']['A_TO_ACLAME']
-    sam_file_iceberg = config['OUTPUT']['OUT_DIR'] + '/' + config['INPUT']['INPUT_FILE_NAME_EXT'] + config['EXTENSION']['A_TO_ICEBERG']
+    sam_file_mges = config['OUTPUT']['OUT_DIR'] + '/' + config['INPUT']['INPUT_FILE_NAME_EXT'] + \
+                        config['EXTENSION']['A_TO_MGES']
     out_file = config['OUTPUT']['OUT_DIR'] + '/' + config['INPUT']['INPUT_FILE_NAME_EXT']
 
-    gen_mobilome_command = 'python {script} -p {sam_plasmids} -a {sam_aclame} -i {sam_iceberg} -o {out_name}  -c {config_path}'.format(
+    gen_mobilome_command = 'python {script} -m {sam_mges} -o {out_name}  -c {config_path}'.format(
         script=gen_mobilome_script,
-        sam_plasmids=sam_file_plasmids,
-        sam_aclame=sam_file_aclame,
-        sam_iceberg=sam_file_iceberg,
+        sam_mges=sam_file_mges,
         out_name=out_file,
         config_path=config['MISC']['CONFIG_FILE']
     )
@@ -167,31 +140,19 @@ def gen_mobilome(config, TELS_statistcs):
 
 def gen_colocalizations(config, TELS_statistcs):
     gen_colocalizations_script = config['SCRIPTS']['FIND_COLOCALIZATIONS']
-    sam_file_plasmids = config['OUTPUT']['OUT_DIR'] + '/' + config['INPUT']['INPUT_FILE_NAME_EXT'] + \
-                        config['EXTENSION']['A_TO_PLASMIDS']
-    sam_file_aclame = config['OUTPUT']['OUT_DIR'] + '/' + config['INPUT']['INPUT_FILE_NAME_EXT'] + config['EXTENSION']['A_TO_ACLAME']
-    sam_file_iceberg = config['OUTPUT']['OUT_DIR'] + '/' + config['INPUT']['INPUT_FILE_NAME_EXT'] + config['EXTENSION']['A_TO_ICEBERG']
+    sam_file_mges = config['OUTPUT']['OUT_DIR'] + '/' + config['INPUT']['INPUT_FILE_NAME_EXT'] + config['EXTENSION']['A_TO_MGES']
     sam_file_kegg = config['OUTPUT']['OUT_DIR'] + '/' + config['INPUT']['INPUT_FILE_NAME_EXT'] + config['EXTENSION']['A_TO_KEGG']
     sam_file_megares = config['OUTPUT']['OUT_DIR'] + '/' + config['INPUT']['INPUT_FILE_NAME_EXT'] + config['EXTENSION']['A_TO_MEGARES']
     out_file = config['OUTPUT']['OUT_DIR'] + '/' + config['INPUT']['INPUT_FILE_NAME_EXT'] + config['EXTENSION']['COLOCALIZATIONS']
-    skip_begin = 0
-    skip_end = 0
-    if "V2" in config['INPUT']['INPUT_FILE_NAME_EXT']:
-        skip_begin = config['MISC']['V2_SKIP_BEGIN']
-        skip_end = config['MISC']['V2_SKIP_END']
 
-    find_colocalizations_command = 'python {script} -p {sam_plasmids} -a {sam_aclame} -i {sam_iceberg} -k {sam_kegg}' \
-                                   ' -m {sam_megares} -r {reads} -e {skip_end} -b {skip_begin} ' \
+    find_colocalizations_command = 'python {script} --mge {sam_mges} -k {sam_kegg} ' \
+                                   '--arg {sam_megares} -r {reads} ' \
                                    '-c {config_file} -o {out_dir}'.format(
         script=gen_colocalizations_script,
-        sam_plasmids=sam_file_plasmids,
-        sam_aclame=sam_file_aclame,
-        sam_iceberg=sam_file_iceberg,
+        sam_mges=sam_file_mges,
         sam_kegg=sam_file_kegg,
         sam_megares=sam_file_megares,
-        skip_begin=skip_begin,
         reads=config['INPUT']['INPUT_FILE'],
-        skip_end=skip_end,
         config_file=config['MISC']['CONFIG_FILE'],
         out_dir=config['OUTPUT']['OUT_DIR']
     )

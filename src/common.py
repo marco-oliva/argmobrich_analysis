@@ -63,12 +63,12 @@ def remove(path):
             print("Error: %s - %s." % (e.filename, e.strerror))
 
 def init_logger():
-    root_logger = logging.getLogger(__name__)
+    root_logger = logging.getLogger()
     root_logger.setLevel(logging.DEBUG)
 
     handler = logging.StreamHandler(sys.stderr)
     handler.setLevel(logging.DEBUG)
-    formatter = logging.Formatter(f'%(asctime)s - %(script_name) - %(message)s')
+    formatter = logging.Formatter(f'%(asctime)s - %(message)s')
     handler.setFormatter(formatter)
     root_logger.addHandler(handler)
 

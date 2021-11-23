@@ -42,13 +42,9 @@ def long_reads_strategy(config):
     for read in sam_file.fetch():
         if read.is_unmapped:
             continue
-        if read.is_secondary or read.is_supplementary:
-            continue
 
-        if read.query_name in reads_aligned:
+        if config['MISC']['USE_SECONDARY_ALIGNMENTS'] not in ['True', 'true'] and read.is_secondary:
             continue
-        else:
-            reads_aligned.add(read.query_name)
 
         # check coverage
         if (float(read.reference_length) / megares_gene_lengths[read.reference_name]) > float(
@@ -152,13 +148,9 @@ def short_reads_stratedy(config):
     for read in sam_file.fetch():
         if read.is_unmapped:
             continue
-        if read.is_secondary or read.is_supplementary:
-            continue
 
-        if read.query_name in reads_aligned:
+        if config['MISC']['USE_SECONDARY_ALIGNMENTS'] not in ['True', 'true'] and read.is_secondary:
             continue
-        else:
-            reads_aligned.add(read.query_name)
 
         for i in range(read.reference_start, read.reference_end):
             megares_genes[read.reference_name][i] = 1
