@@ -198,7 +198,8 @@ def get_colocalizations(config, reads_file_path, to_megares_path, to_mges_path, 
         has_ARG = False
         has_MGE = False
         colocalization = list()
-        sorted_candidate_coloc_list = sorted(candidate_colocalization_list, key=lambda x: (x[1][0], x[0]))
+        sorted_candidate_coloc_list = sorted(candidate_colocalization_list, key=lambda x: (x[1], x[0]))
+        #sorted_candidate_coloc_list = sorted(candidate_colocalization_list, key=lambda x: x[0])
 
         # First take all the non-overlapping ARGS
         for idx, aligned_gene in enumerate(sorted_candidate_coloc_list):
