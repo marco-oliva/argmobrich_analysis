@@ -17,6 +17,7 @@ def long_reads_strategy(config):
     mges_sam_file = pysam.AlignmentFile(config['INPUT']['MGES_SAM_FILE'], 'r')
 
     gene_dict = dict()
+    reads_aligned = set()
     # Iterate through every aligned segment
     for read in mges_sam_file.fetch():
         if read.is_unmapped:
@@ -32,9 +33,11 @@ def long_reads_strategy(config):
                 gene_dict[read.reference_name] = 1
             else:
                 gene_dict[read.reference_name] += 1
+            reads_aligned.add(read.query_name)
 
     # Prepare rows of tsv
     csv_rows = list()
+    csv_rows.append('MGE containing reads {}'.format(len(reads_aligned)))
     gene_riches = [(header, gene_dict[header]) for header in gene_dict]
 
     # Output how many different MGEs are in the data, this is actually diversity!
@@ -62,6 +65,7 @@ def short_reads_stratedy(config):
     mges_sam_file = pysam.AlignmentFile(config['INPUT']['MGES_SAM_FILE'], 'r')
 
     gene_hits = dict()
+    reads_aligned_per_gene = dict()
     # Iterate through every read. Accumulate number of reads aligned and number of alignments per aclame mge
     for read in mges_sam_file.fetch():
         if read.is_unmapped:
@@ -73,19 +77,25 @@ def short_reads_stratedy(config):
         for i in range(read.reference_start, read.reference_end):
             mge_genes[read.reference_name][i] = 1
 
-        if not read.reference_name in gene_hits:
+        if read.reference_name not in gene_hits:
             gene_hits[read.reference_name] = 1
+            reads_aligned_per_gene[read.reference_name] = set()
+            reads_aligned_per_gene[read.reference_name].add(read.query_name)
         else:
             gene_hits[read.reference_name] += 1
+            reads_aligned_per_gene[read.reference_name].add(read.query_name)
 
     # check coverage
     covered_genes = set()
+    reads_aligned = set()
     for mge_gene, coverage_vector in mge_genes.items():
         if float(sum(coverage_vector) / len(coverage_vector)) > float(config['MISC']['GLOBAL_MGE_THRESHOLD']):
             covered_genes.add(mge_gene)
+            reads_aligned.update(reads_aligned_per_gene[mge_gene])
 
     # Prepare rows of tsv
     csv_rows = list()
+    csv_rows.append('MGE containing reads {}'.format(len(reads_aligned)))
     covered_gene_richness = [(header, gene_hits[header]) for header in covered_genes]
 
     # Output how many different MGEs are in the data, this is actually diversity!
@@ -106,6 +116,7 @@ def short_reads_stratedy(config):
 
 def main():
     parser = argparse.ArgumentParser(description='Colocalizations Finder.')
+    parser.add_argument('-r', help='Reads file', dest='reads_file', required=True)
     parser.add_argument('-m', help='MGEs alignment file', dest='mges_sam', required=True)
     parser.add_argument('-o', help='Output file prefix', dest='out_prefix', required=True)
     parser.add_argument('-c', help='Config file', dest='config_path', required=True)
@@ -118,6 +129,7 @@ def main():
 
     config['INPUT'] = dict()
     config['INPUT']['MGES_SAM_FILE'] = args.mges_sam
+    config['INPUT']['READS_FILE'] = args.reads_file
     config['OUTPUT'] = dict()
     config['OUTPUT']['OUTPUT_PREFIX'] = args.out_prefix
 

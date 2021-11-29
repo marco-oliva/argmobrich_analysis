@@ -4,6 +4,7 @@ import argparse
 import csv
 import configparser
 import numpy as np
+import json
 from common import *
 
 
@@ -32,13 +33,18 @@ def long_reads_strategy(config):
                                         "group": row[3]
                                         }
 
+    # Get reads lengths
+    reads_lengths = dict()
+    with open(config['INPUT']['READS_FILE'] + config['EXTENSION']['READS_LENGTH'], 'rt') as reads_lengths_json_fp:
+        reads_lengths = json.load(reads_lengths_json_fp)
+
     gene_dict = {}
     class_dict = {}
     mech_dict = {}
     group_dict = {}
 
-    reads_aligned = set()
     # Iterate through every read. Accumulate number of reads while recording read length
+    reads_aligned = set()
     for read in sam_file.fetch():
         if read.is_unmapped:
             continue
@@ -54,53 +60,63 @@ def long_reads_strategy(config):
             group = megares_ontology[read.reference_name]["group"]
 
             # update gene dict
-            if (not read.reference_name in gene_dict):
+            if read.reference_name not in gene_dict:
                 gene_dict[read.reference_name] = 1
             else:
                 gene_dict[read.reference_name] += 1
 
             # update class dict
-            if (not classname in class_dict):
+            if classname not in class_dict:
                 class_dict[classname] = 1
             else:
                 class_dict[classname] += 1
 
             # update mechanism dict
-            if (not mech in mech_dict):
+            if mech not in mech_dict:
                 mech_dict[mech] = 1
             else:
                 mech_dict[mech] += 1
 
             # update group dict
-            if (not group in group_dict):
+            if group not in group_dict:
                 group_dict[group] = 1
             else:
                 group_dict[group] += 1
 
+            reads_aligned.add(read.query_name)
+
     # Prepare rows of diversity csv
-    csv_rows = [
+    csv_rows = list()
+    csv_rows.append(['Statistics'])
+    arg_containing_reads_stats = reads_statistics(reads_aligned, reads_lengths)
+    for stat_name, stat_value in arg_containing_reads_stats.items():
+        csv_rows.append(['ARG_' + stat_name, stat_value])
+
+    csv_rows.append(['Resistome'])
+    csv_rows.append(
         ["MEGARes Gene Header", "Num Reads", "Group", "Num Reads", "Mechanism", "Num Reads", "Class",
-         "Num Reads"]]
+         "Num Reads"])
+    start = len(csv_rows)
     for gene in sorted(gene_dict, key=lambda gene: gene_dict[gene], reverse=True):
         csv_rows.append([gene, gene_dict[gene]])
 
-    i = 1
+    i = start
     for group in sorted(group_dict, key=lambda group: group_dict[group], reverse=True):
         csv_rows[i].extend([group, group_dict[group]])
         i += 1
 
-    i = 1
+    i = start
     for mech in sorted(mech_dict, key=lambda mech: mech_dict[mech], reverse=True):
         csv_rows[i].extend([mech, mech_dict[mech]])
         i += 1
 
-    i = 1
+    i = start
     for class_name in sorted(class_dict, key=lambda class_name: class_dict[class_name], reverse=True):
         csv_rows[i].extend([class_name, class_dict[class_name]])
         i += 1
 
     # Write diversity tsv
-    with open(config['OUTPUT']['OUTPUT_PREFIX'] + "_amr_diversity.csv", 'w') as out_csv:
+    with open(config['OUTPUT']['OUTPUT_PREFIX'] + '_' + config['MISC']['RESISTOME_STRATEGY'] + "_amr_diversity.csv", 'w') as out_csv:
         csv_writer = csv.writer(out_csv)
         csv_writer.writerows(csv_rows)
 
@@ -138,12 +154,16 @@ def short_reads_stratedy(config):
                                         "group": row[3]
                                         }
 
+    reads_lengths = dict()
+    with open(config['INPUT']['READS_FILE'] + config['EXTENSION']['READS_LENGTH'], 'rt') as reads_lengths_json_fp:
+        reads_lengths = json.load(reads_lengths_json_fp)
+
     gene_dict = {}
     class_dict = {}
     mech_dict = {}
     group_dict = {}
 
-    reads_aligned = set()
+    reads_aligned_per_gene = dict()
     # Iterate through every read. Accumulate number of reads while recording read length
     for read in sam_file.fetch():
         if read.is_unmapped:
@@ -162,32 +182,38 @@ def short_reads_stratedy(config):
         # update gene dict
         if (not read.reference_name in gene_dict):
             gene_dict[read.reference_name] = 1
+            reads_aligned_per_gene[read.reference_name] = set()
+            reads_aligned_per_gene[read.reference_name].add(read.query_name)
         else:
             gene_dict[read.reference_name] += 1
+            reads_aligned_per_gene[read.reference_name].add(read.query_name)
 
         # update class dict
-        if (not classname in class_dict):
+        if classname not in class_dict:
             class_dict[classname] = 1
         else:
             class_dict[classname] += 1
 
         # update mechanism dict
-        if (not mech in mech_dict):
+        if mech not in mech_dict:
             mech_dict[mech] = 1
         else:
             mech_dict[mech] += 1
 
         # update group dict
-        if (not group in group_dict):
+        if group not in group_dict:
             group_dict[group] = 1
         else:
             group_dict[group] += 1
 
     # check coverage
     covered_genes = set()
+    reads_aligned = set()
     for megares_gene, coverage_vector in megares_genes.items():
         if (float(sum(coverage_vector) / len(coverage_vector)) > float(config['MISC']['GLOBAL_AMR_THRESHOLD'])):
             covered_genes.add(megares_gene)
+            reads_aligned.update(reads_aligned_per_gene[megares_gene])
+
 
     # Get only covered genes
     gene_covered_dict = dict()
@@ -207,23 +233,31 @@ def short_reads_stratedy(config):
 
 
     # Prepare rows of diversity csv
-    csv_rows = [
+    csv_rows = list()
+    csv_rows.append(['Statistics'])
+    arg_containing_reads_stats = reads_statistics(reads_aligned, reads_lengths)
+    for stat_name, stat_value in arg_containing_reads_stats.items():
+        csv_rows.append(['ARG_' + stat_name, stat_value])
+
+    csv_rows.append(['Resistome'])
+    csv_rows.append(
         ["MEGARes Gene Header", "Num Reads", "Group", "Num Reads", "Mechanism", "Num Reads", "Class",
-         "Num Reads"]]
+         "Num Reads"])
+    start = len(csv_rows)
     for gene in sorted(gene_covered_dict, key=lambda gene: gene_covered_dict[gene], reverse=True):
         csv_rows.append([gene, gene_covered_dict[gene]])
 
-    i = 1
+    i = start
     for group in sorted(group_covered_dict, key=lambda group: group_covered_dict[group], reverse=True):
         csv_rows[i].extend([group, group_covered_dict[group]])
         i += 1
 
-    i = 1
+    i = start
     for mech in sorted(mech_covered_dict, key=lambda mech: mech_covered_dict[mech], reverse=True):
         csv_rows[i].extend([mech, mech_covered_dict[mech]])
         i += 1
 
-    i = 1
+    i = start
     for class_name in sorted(class_covered_dict, key=lambda class_name: class_covered_dict[class_name], reverse=True):
         csv_rows[i].extend([class_name, class_covered_dict[class_name]])
         i += 1
@@ -245,6 +279,7 @@ def short_reads_stratedy(config):
 
 def main():
     parser = argparse.ArgumentParser(description='Compute resistome')
+    parser.add_argument('-r', help='Reads file', dest='reads_file', required=True)
     parser.add_argument('-s', help='Alignment file', dest='sam_file', required=True)
     parser.add_argument('-o', help='Output Prefix', dest='out_prefix', required=True)
     parser.add_argument('-c', help='Config file', dest='config_path', required=True)
@@ -257,6 +292,7 @@ def main():
 
     config['INPUT'] = dict()
     config['INPUT']['SAM_FILE'] = args.sam_file
+    config['INPUT']['READS_FILE'] = args.reads_file
     config['OUTPUT'] = dict()
     config['OUTPUT']['OUTPUT_PREFIX'] = args.out_prefix
 

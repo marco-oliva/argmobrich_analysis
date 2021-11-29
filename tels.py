@@ -3,6 +3,7 @@ from Bio import SeqIO
 import statistics
 from scipy.stats import kurtosis
 from scipy.stats import skew
+import json
 
 from src.common import *
 
@@ -114,11 +115,12 @@ def gen_resistome(config, TELS_statistcs):
     sam_file = config['OUTPUT']['OUT_DIR'] + '/' + config['INPUT']['INPUT_FILE_NAME_EXT'] + config['EXTENSION']['A_TO_MEGARES']
     out_file = config['OUTPUT']['OUT_DIR'] + '/' + config['INPUT']['INPUT_FILE_NAME_EXT']
 
-    gen_resistome_command = 'python {script} -s {sam_file} -o {out_name} -c {config_path}'.format(
+    gen_resistome_command = 'python {script} -s {sam_file} -o {out_name} -c {config_path} -r {reads_file}'.format(
         script=gen_resistome_script,
         sam_file=sam_file,
         out_name=out_file,
-        config_path=config['MISC']['CONFIG_FILE']
+        config_path=config['MISC']['CONFIG_FILE'],
+        reads_file=config['INPUT']['INPUT_FILE']
     )
     execute_command(gen_resistome_command)
 
@@ -129,11 +131,12 @@ def gen_mobilome(config, TELS_statistcs):
                         config['EXTENSION']['A_TO_MGES']
     out_file = config['OUTPUT']['OUT_DIR'] + '/' + config['INPUT']['INPUT_FILE_NAME_EXT']
 
-    gen_mobilome_command = 'python {script} -m {sam_mges} -o {out_name}  -c {config_path}'.format(
+    gen_mobilome_command = 'python {script} -m {sam_mges} -o {out_name}  -c {config_path} -r {reads_file}'.format(
         script=gen_mobilome_script,
         sam_mges=sam_file_mges,
         out_name=out_file,
-        config_path=config['MISC']['CONFIG_FILE']
+        config_path=config['MISC']['CONFIG_FILE'],
+        reads_file=config['INPUT']['INPUT_FILE']
     )
     execute_command(gen_mobilome_command)
 
@@ -172,36 +175,6 @@ def gen_colocalizations_richness(config, TELS_statistcs):
         config_path=config['MISC']['CONFIG_FILE']
     )
     execute_command(colocalizations_richness_command, out_file_path=out_file)
-
-    arg_read_lengths = list()
-    TELS_statistcs['N_ARG_ON_TARGET_READS'] = 0
-    genes_list_csvs = config['OUTPUT']['OUT_DIR'] + '/' + config['INPUT']['INPUT_FILE_NAME_EXT'] + config['EXTENSION']['GENES_LIST']
-    with open(genes_list_csvs, 'r') as genes_list_csv_handler:
-        reader = csv.reader(genes_list_csv_handler)
-        header = next(reader)
-        for row in reader:
-            read_name  = row[0]
-            amr_genes  = row[1].split(';')
-            mge_genes  = row[3].split(';')
-            kegg_genes = row[5].split(';')
-
-            if (len(amr_genes) > 0):
-                arg_read_lengths.append(TELS_statistcs['READ_LENGTHS'][read_name])
-    if len(arg_read_lengths) > 0:
-        TELS_statistcs['N_ARG_ON_TARGET_READS'] = str(len(arg_read_lengths))
-        TELS_statistcs['ARG_ON_TARGET_READ_LENGTH_MEAN'] = str(statistics.mean(arg_read_lengths))
-        TELS_statistcs['ARG_ON_TARGET_READ_LENGTH_MEDIAN'] = str(statistics.median(arg_read_lengths))
-        TELS_statistcs['ARG_ON_TARGET_READ_LENGTH_RANGE'] = str((min(arg_read_lengths), max(arg_read_lengths)))
-        if len(arg_read_lengths) >= 2:
-            TELS_statistcs['ARG_ON_TARGET_READ_LENGTH_STD_DEV'] = str(statistics.stdev(arg_read_lengths))
-            TELS_statistcs['ARG_ON_TARGET_READ_LENGTH_VARIANCE'] = str(statistics.variance(arg_read_lengths))
-            TELS_statistcs['ARG_ON_TARGET_READ_LENGTH_SKEW'] = str(skew(arg_read_lengths))
-            TELS_statistcs['ARG_ON_TARGET_READ_LENGTH_KURTOSIS'] = str(kurtosis(arg_read_lengths))
-        else:
-            TELS_statistcs['ARG_ON_TARGET_READ_LENGTH_STD_DEV'] = 0
-            TELS_statistcs['ARG_ON_TARGET_READ_LENGTH_VARIANCE'] = 0
-            TELS_statistcs['ARG_ON_TARGET_READ_LENGTH_SKEW'] = 0
-            TELS_statistcs['ARG_ON_TARGET_READ_LENGTH_KURTOSIS'] = 0
 
 def print_statistics(config, TELS_statistics):
     with open('{}/{}_stats.csv'.format(config['OUTPUT']['OUT_DIR'], config['INPUT']['INPUT_FILE_NAME_EXT']), 'w') as stats_csv_file:
@@ -258,29 +231,19 @@ def main():
     else:
         reads_file_handle = open(config['INPUT']['INPUT_FILE'], 'rt')
 
-    for record in SeqIO.parse(reads_file_handle, "fastq"):
-        read_len = len(record.seq)
+    for read in SeqIO.parse(reads_file_handle, "fastq"):
+        read_len = len(read.seq)
         TELS_statistcs['READS_BEFORE_DEDUPLICATION'] += 1
-        TELS_statistcs['READ_LENGTHS'][record.name] = read_len
+        TELS_statistcs['READ_LENGTHS'][read.name] = read_len
+
+    with open(config['OUTPUT']['OUT_DIR'] + '/' + config['INPUT']['INPUT_FILE_NAME_EXT'] + config['EXTENSION']['READS_LENGTH'], 'w') as read_lengths_fp:
+        json.dump(TELS_statistcs['READ_LENGTHS'], read_lengths_fp)
 
     reads_file_handle.close()
-    root_logger.info("Reads befgore deduplication {}".format(TELS_statistcs['READS_BEFORE_DEDUPLICATION']))
 
-    read_lengths = list(TELS_statistcs['READ_LENGTHS'].values())
-    TELS_statistcs['READ_LENGTH_MEAN'] = str(statistics.mean(read_lengths))
-    TELS_statistcs['READ_LENGTH_MEDIAN'] = str(statistics.median(read_lengths))
-    TELS_statistcs['READ_LENGTH_RANGE'] = str((min(read_lengths), max(read_lengths)))
-    if len(read_lengths) >= 2:
-        TELS_statistcs['READ_LENGTH_STD_DEV'] = str(statistics.stdev(read_lengths))
-        TELS_statistcs['READ_LENGTH_VARIANCE'] = str(statistics.variance(read_lengths))
-        TELS_statistcs['READ_LENGTH_SKEW'] = str(skew(read_lengths))
-        TELS_statistcs['READ_LENGTH_KURTOSIS'] = str(kurtosis(read_lengths))
-    else:
-        TELS_statistcs['READ_LENGTH_STD_DEV'] = 0
-        TELS_statistcs['READ_LENGTH_VARIANCE'] = 0
-        TELS_statistcs['READ_LENGTH_SKEW'] = 0
-        TELS_statistcs['READ_LENGTH_KURTOSIS'] = 0
-
+    reads_stats = reads_statistics(TELS_statistcs['READ_LENGTHS'].keys(), TELS_statistcs['READ_LENGTHS'])
+    TELS_statistcs['READS_STATS'] = dict()
+    TELS_statistcs['READS_STATS'].update(reads_stats)
 
     if config['PIPELINE_STEPS']['DEDUPLICATE'] in ['True', 'true']:
         root_logger.info("Deduplicating: Finding duplicates")
@@ -296,8 +259,20 @@ def main():
             else:
                 dedup_reads_file_handle = open(deduped_file, 'rt')
 
-            TELS_statistcs['READS_AFTER_DEDUPLICATION'] = sum(1 for record in SeqIO.parse(dedup_reads_file_handle, "fastq"))
+            deduplicated_reads_length = dict()
+            for read in SeqIO.parse(dedup_reads_file_handle, "fastq"):
+                deduplicated_reads_length[read.name] = len(read.seq)
+
+            with open(deduped_file + config['EXTENSION']['READS_LENGTH'], 'w') as read_lengths_fp:
+                json.dump(deduplicated_reads_length, read_lengths_fp)
+
+            reads_stats = reads_statistics(deduplicated_reads_length.keys(), deduplicated_reads_length)
+            TELS_statistcs['DEDUPLICATED_READS_STATS'] = dict()
+            TELS_statistcs['DEDUPLICATED_READS_STATS'].update(reads_stats)
+
+            TELS_statistcs['READS_AFTER_DEDUPLICATION'] = len(deduplicated_reads_length)
             TELS_statistcs['READS_AFTER_DEDUPLICATION_PERC'] = (float(TELS_statistcs['READS_AFTER_DEDUPLICATION']) / float(TELS_statistcs['READS_BEFORE_DEDUPLICATION'])) * 100
+
             config['INPUT']['INPUT_FILE_NAME_EXT'] = os.path.basename(deduped_file)
             config['INPUT']['INPUT_FILE_NAME_NO_EXT'] = os.path.splitext(config['INPUT']['INPUT_FILE_NAME_EXT'])[0]
             config['INPUT']['INPUT_FILE_PATH'] = os.path.dirname(os.path.abspath(deduped_file))

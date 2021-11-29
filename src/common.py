@@ -9,6 +9,9 @@ import subprocess
 import gzip
 import csv
 import numpy as np
+import statistics
+from scipy.stats import kurtosis
+from scipy.stats import skew
 
 
 # ------------------------------------------------------------
@@ -50,6 +53,7 @@ def mkdir_p(path):
         else:
             raise  # nop
 
+
 def remove(path):
     if os.path.isdir(path):
         try:
@@ -61,6 +65,7 @@ def remove(path):
             os.remove(path)
         except OSError as e:  ## if failed, report it back to the user ##
             print("Error: %s - %s." % (e.filename, e.strerror))
+
 
 def init_logger():
     root_logger = logging.getLogger()
@@ -74,16 +79,19 @@ def init_logger():
 
     return root_logger
 
+
 def is_gz_file(filepath):
     with open(filepath, 'rb') as test_f:
         return test_f.read(2) == b'\x1f\x8b'
 
-def reject_outliers(data, m = 2.):
+
+def reject_outliers(data, m=2.):
     data = np.array(data)
     d = np.abs(data - np.median(data))
     mdev = np.median(d)
-    s = d/mdev if mdev else 0.
-    return data[s<m]
+    s = d / mdev if mdev else 0.
+    return data[s < m]
+
 
 # Input: config
 def read_megares_ontology(config):
@@ -117,3 +125,27 @@ def read_megares_ontology(config):
                                         "group": group
                                         }
     return megares_ontology, hierarchy_dict
+
+
+def reads_statistics(read_sets, read_lengths_dict):
+    read_lengths = list()
+    for read in read_sets:
+        read_lengths.append(read_lengths_dict[read])
+
+    stats_dict = dict()
+    stats_dict['NUM_OF_READS'] = str(len(read_lengths))
+    stats_dict['READ_LENGTH_MEAN'] = str(statistics.mean(read_lengths))
+    stats_dict['READ_LENGTH_MEDIAN'] = str(statistics.median(read_lengths))
+    stats_dict['READ_LENGTH_RANGE'] = str((min(read_lengths), max(read_lengths)))
+    if len(read_lengths) >= 2:
+        stats_dict['READ_LENGTH_STD_DEV'] = str(statistics.stdev(read_lengths))
+        stats_dict['READ_LENGTH_VARIANCE'] = str(statistics.variance(read_lengths))
+        stats_dict['READ_LENGTH_SKEW'] = str(skew(read_lengths))
+        stats_dict['READ_LENGTH_KURTOSIS'] = str(kurtosis(read_lengths))
+    else:
+        stats_dict['READ_LENGTH_STD_DEV'] = 0
+        stats_dict['READ_LENGTH_VARIANCE'] = 0
+        stats_dict['READ_LENGTH_SKEW'] = 0
+        stats_dict['READ_LENGTH_KURTOSIS'] = 0
+
+    return stats_dict
