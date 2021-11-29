@@ -69,7 +69,7 @@ def get_colocalizations(config, reads_file_path, to_megares_path, to_mges_path, 
                 continue
 
             # Check coverage
-            if (read.reference_length / (megares_gene_lengths[read.reference_name])) > float(config['MISC']['GLOBAL_AMR_THRESHOLD']):
+            if (read.reference_length / (megares_gene_lengths[read.reference_name])) > float(config['MISC']['GLOBAL_AMR_THRESHOLD_COLOCALIZATIONS']):
                 if read.query_name not in read_to_amr:
                     read_to_amr[read.query_name] = list()
                     amr_positions[read.query_name] = list()
@@ -96,7 +96,7 @@ def get_colocalizations(config, reads_file_path, to_megares_path, to_mges_path, 
                 continue
 
             # Check coverage
-            if (read.reference_length / (kegg_gene_lengths[read.reference_name])) > float(config['MISC']['GLOBAL_KEGG_THRESHOLD']):
+            if (read.reference_length / (kegg_gene_lengths[read.reference_name])) > float(config['MISC']['GLOBAL_KEGG_THRESHOLD_COLOCALIZATIONS']):
                 if read.query_name not in read_to_kegg:
                     read_to_kegg[read.query_name] = list()
                     kegg_positions[read.query_name] = list()
@@ -118,7 +118,7 @@ def get_colocalizations(config, reads_file_path, to_megares_path, to_mges_path, 
             # Check coverage
             gene_length = mge_gene_lengths[read.reference_name]
 
-            if (read.reference_length / gene_length) > float(config['MISC']['GLOBAL_MGE_THRESHOLD']):
+            if (read.reference_length / gene_length) > float(config['MISC']['GLOBAL_MGE_THRESHOLD_COLOCALIZATIONS']):
                 if read.query_name not in read_to_mges:
                     read_to_mges[read.query_name] = list()
                     mge_positions[read.query_name] = list()

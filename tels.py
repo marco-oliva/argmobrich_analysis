@@ -45,7 +45,7 @@ def deduplicate(config, TELS_statistcs):
 def align_to_megares(config, TELS_statistcs):
     aligner_exe = config['TOOLS']['ALIGNER']
     aligner_flags = config['TOOLS']['ALIGNER_FLAGS']
-    aligner_flags = aligner_flags + ' ' + config['TOOLS']['ALINGER_PB_OPTION']
+    aligner_flags = aligner_flags + ' ' + config['TOOLS']['ALIGNER_PB_OPTION']
     aligner_flags = aligner_flags + ' ' + config['TOOLS']['ALIGNER_ONT_OPTION']
     aligner_flags = aligner_flags + ' ' + config['TOOLS']['ALIGNER_HIFI_OPTION']
 
@@ -69,7 +69,7 @@ def align_to_megares(config, TELS_statistcs):
 def align_to_kegg(config, TELS_statistcs):
     aligner_exe = config['TOOLS']['ALIGNER']
     aligner_flags = config['TOOLS']['ALIGNER_FLAGS']
-    aligner_flags = aligner_flags + ' ' + config['TOOLS']['ALINGER_PB_OPTION']
+    aligner_flags = aligner_flags + ' ' + config['TOOLS']['ALIGNER_PB_OPTION']
     aligner_flags = aligner_flags + ' ' + config['TOOLS']['ALIGNER_ONT_OPTION']
     aligner_flags = aligner_flags + ' ' + config['TOOLS']['ALIGNER_HIFI_OPTION']
 
@@ -91,7 +91,7 @@ def align_to_kegg(config, TELS_statistcs):
 def align_to_mges(config, TELS_statistcs):
     aligner_exe = config['TOOLS']['ALIGNER']
     aligner_flags = config['TOOLS']['ALIGNER_FLAGS']
-    aligner_flags = aligner_flags + ' ' + config['TOOLS']['ALINGER_PB_OPTION']
+    aligner_flags = aligner_flags + ' ' + config['TOOLS']['ALIGNER_PB_OPTION']
     aligner_flags = aligner_flags + ' ' + config['TOOLS']['ALIGNER_ONT_OPTION']
     aligner_flags = aligner_flags + ' ' + config['TOOLS']['ALIGNER_HIFI_OPTION']
 
