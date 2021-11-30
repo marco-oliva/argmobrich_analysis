@@ -5,6 +5,7 @@ import csv
 import configparser
 import numpy as np
 import json
+import os
 from common import *
 
 
@@ -35,7 +36,7 @@ def long_reads_strategy(config):
 
     # Get reads lengths
     reads_lengths = dict()
-    with open(config['INPUT']['READS_FILE'] + config['EXTENSION']['READS_LENGTH'], 'rt') as reads_lengths_json_fp:
+    with open(config['OUTPUT']['OUT_DIR'] + '/' + config['INPUT']['INPUT_FILE_NAME_EXT'] + config['EXTENSION']['READS_LENGTH'], 'rt') as reads_lengths_json_fp:
         reads_lengths = json.load(reads_lengths_json_fp)
 
     gene_dict = {}
@@ -155,7 +156,7 @@ def short_reads_stratedy(config):
                                         }
 
     reads_lengths = dict()
-    with open(config['INPUT']['READS_FILE'] + config['EXTENSION']['READS_LENGTH'], 'rt') as reads_lengths_json_fp:
+    with open(config['OUTPUT']['OUT_DIR'] + '/' + config['INPUT']['INPUT_FILE_NAME_EXT'] + config['EXTENSION']['READS_LENGTH'], 'rt') as reads_lengths_json_fp:
         reads_lengths = json.load(reads_lengths_json_fp)
 
     gene_dict = {}
@@ -292,9 +293,14 @@ def main():
 
     config['INPUT'] = dict()
     config['INPUT']['SAM_FILE'] = args.sam_file
-    config['INPUT']['READS_FILE'] = args.reads_file
+    config['INPUT']['INPUT_FILE_NAME_EXT'] = os.path.basename(args.reads_file)
+    config['INPUT']['INPUT_FILE_NAME_NO_EXT'] = os.path.splitext(config['INPUT']['INPUT_FILE_NAME_EXT'])[0]
+    config['INPUT']['INPUT_FILE_PATH'] = os.path.dirname(os.path.abspath(args.reads_file))
+    config['INPUT']['INPUT_FILE'] = os.path.join(config['INPUT']['INPUT_FILE_PATH'], config['INPUT']['INPUT_FILE_NAME_EXT'])
+
     config['OUTPUT'] = dict()
     config['OUTPUT']['OUTPUT_PREFIX'] = args.out_prefix
+    config['OUTPUT']['OUT_DIR'] = os.path.dirname(os.path.abspath(config['OUTPUT']['OUTPUT_PREFIX']))
 
     strategy = config['MISC']['RESISTOME_STRATEGY']
     logger.info('Strategy: {}'.format(strategy))

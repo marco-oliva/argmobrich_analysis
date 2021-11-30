@@ -154,7 +154,7 @@ def reads_statistics(read_sets, read_lengths_dict):
     stats_dict[no_prfx + 'NUM_OF_READS'] = str(len(read_lengths))
     stats_dict[no_prfx + 'READ_LENGTH_MEAN'] = str(statistics.mean(read_lengths))
     stats_dict[no_prfx + 'READ_LENGTH_MEDIAN'] = str(statistics.median(read_lengths))
-    stats_dict[no_prfx + 'READ_LEqNGTH_RANGE'] = str((min(read_lengths), max(read_lengths)))
+    stats_dict[no_prfx + 'READ_LENGTH_RANGE'] = str((min(read_lengths), max(read_lengths)))
     if len(read_lengths) >= 2:
         stats_dict[no_prfx + 'READ_LENGTH_STD_DEV'] = str(statistics.stdev(read_lengths))
         stats_dict[no_prfx + 'READ_LENGTH_VARIANCE'] = str(statistics.variance(read_lengths))
