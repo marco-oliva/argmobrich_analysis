@@ -183,9 +183,15 @@ def print_statistics(config, TELS_statistics):
         stats_writer.writerow(header)
 
         for stat_name, stat_value in TELS_statistics.items():
-            if (stat_name != 'READ_LENGTHS'):
-                line = [stat_name, stat_value]
-                stats_writer.writerow(line)
+            if stat_name != 'READ_LENGTHS':
+                if '{' in stat_value:
+                    stat_value_dict = json.loads(stat_value)
+                    for stat_name, stat_value in stat_value_dict.items():
+                        line = [stat_name, stat_value]
+                        stats_writer.writerow(line)
+                else:
+                    line = [stat_name, stat_value]
+                    stats_writer.writerow(line)
 
 
 def main():
@@ -236,10 +242,10 @@ def main():
         TELS_statistcs['READS_BEFORE_DEDUPLICATION'] += 1
         TELS_statistcs['READ_LENGTHS'][read.name] = read_len
 
+    reads_file_handle.close()
+
     with open(config['OUTPUT']['OUT_DIR'] + '/' + config['INPUT']['INPUT_FILE_NAME_EXT'] + config['EXTENSION']['READS_LENGTH'], 'w') as read_lengths_fp:
         json.dump(TELS_statistcs['READ_LENGTHS'], read_lengths_fp)
-
-    reads_file_handle.close()
 
     reads_stats = reads_statistics(TELS_statistcs['READ_LENGTHS'].keys(), TELS_statistcs['READ_LENGTHS'])
     TELS_statistcs['READS_STATS'] = dict()
@@ -250,33 +256,33 @@ def main():
         find_duplicates(config, TELS_statistcs)
         root_logger.info("Deduplicating: Filtering duplicates")
         deduplicate(config, TELS_statistcs)
-    else:
-        deduped_file = config['OUTPUT']['OUT_DIR'] + '/' + config['INPUT']['INPUT_FILE_NAME_EXT'] + config['EXTENSION']['DEDUPLICATED']
-        if (os.path.isfile(deduped_file)):
 
-            if is_gz_file(deduped_file):
-                dedup_reads_file_handle = gzip.open(deduped_file, 'rt')
-            else:
-                dedup_reads_file_handle = open(deduped_file, 'rt')
+    deduped_file = config['OUTPUT']['OUT_DIR'] + '/' + config['INPUT']['INPUT_FILE_NAME_EXT'] + config['EXTENSION']['DEDUPLICATED']
+    if (os.path.isfile(deduped_file)):
+        root_logger.info('Using deduplicated file {}'.format(deduped_file))
+        if is_gz_file(deduped_file):
+            dedup_reads_file_handle = gzip.open(deduped_file, 'rt')
+        else:
+            dedup_reads_file_handle = open(deduped_file, 'rt')
 
-            deduplicated_reads_length = dict()
-            for read in SeqIO.parse(dedup_reads_file_handle, "fastq"):
-                deduplicated_reads_length[read.name] = len(read.seq)
+        deduplicated_reads_length = dict()
+        for read in SeqIO.parse(dedup_reads_file_handle, "fastq"):
+            deduplicated_reads_length[read.name] = len(read.seq)
 
-            with open(deduped_file + config['EXTENSION']['READS_LENGTH'], 'w') as read_lengths_fp:
-                json.dump(deduplicated_reads_length, read_lengths_fp)
+        with open(deduped_file + config['EXTENSION']['READS_LENGTH'], 'w') as read_lengths_fp:
+            json.dump(deduplicated_reads_length, read_lengths_fp)
 
-            reads_stats = reads_statistics(deduplicated_reads_length.keys(), deduplicated_reads_length)
-            TELS_statistcs['DEDUPLICATED_READS_STATS'] = dict()
-            TELS_statistcs['DEDUPLICATED_READS_STATS'].update(reads_stats)
+        reads_stats = reads_statistics(deduplicated_reads_length.keys(), deduplicated_reads_length)
+        TELS_statistcs['DEDUPLICATED_READS_STATS'] = dict()
+        TELS_statistcs['DEDUPLICATED_READS_STATS'].update(reads_stats)
 
-            TELS_statistcs['READS_AFTER_DEDUPLICATION'] = len(deduplicated_reads_length)
-            TELS_statistcs['READS_AFTER_DEDUPLICATION_PERC'] = (float(TELS_statistcs['READS_AFTER_DEDUPLICATION']) / float(TELS_statistcs['READS_BEFORE_DEDUPLICATION'])) * 100
+        TELS_statistcs['READS_AFTER_DEDUPLICATION'] = len(deduplicated_reads_length)
+        TELS_statistcs['READS_AFTER_DEDUPLICATION_PERC'] = (float(TELS_statistcs['READS_AFTER_DEDUPLICATION']) / float(TELS_statistcs['READS_BEFORE_DEDUPLICATION'])) * 100
 
-            config['INPUT']['INPUT_FILE_NAME_EXT'] = os.path.basename(deduped_file)
-            config['INPUT']['INPUT_FILE_NAME_NO_EXT'] = os.path.splitext(config['INPUT']['INPUT_FILE_NAME_EXT'])[0]
-            config['INPUT']['INPUT_FILE_PATH'] = os.path.dirname(os.path.abspath(deduped_file))
-            config['INPUT']['INPUT_FILE'] = os.path.join(config['INPUT']['INPUT_FILE_PATH'], config['INPUT']['INPUT_FILE_NAME_EXT'])
+        config['INPUT']['INPUT_FILE_NAME_EXT'] = os.path.basename(deduped_file)
+        config['INPUT']['INPUT_FILE_NAME_NO_EXT'] = os.path.splitext(config['INPUT']['INPUT_FILE_NAME_EXT'])[0]
+        config['INPUT']['INPUT_FILE_PATH'] = os.path.dirname(os.path.abspath(deduped_file))
+        config['INPUT']['INPUT_FILE'] = os.path.join(config['INPUT']['INPUT_FILE_PATH'], config['INPUT']['INPUT_FILE_NAME_EXT'])
 
     if config['PIPELINE_STEPS']['ALIGN_TO_MEGARES'] in ['True', 'true']:
         root_logger.info("Aligning to Megares")

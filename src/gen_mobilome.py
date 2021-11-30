@@ -4,6 +4,7 @@ import argparse
 import csv
 import configparser
 import numpy as np
+import json
 from common import *
 
 
@@ -15,6 +16,11 @@ def long_reads_strategy(config):
         mges_gene_lengths[rec.name] = len(rec.seq)
 
     mges_sam_file = pysam.AlignmentFile(config['INPUT']['MGES_SAM_FILE'], 'r')
+
+    # Get reads lengths
+    reads_lengths = dict()
+    with open(config['INPUT']['READS_FILE'] + config['EXTENSION']['READS_LENGTH'], 'rt') as reads_lengths_json_fp:
+        reads_lengths = json.load(reads_lengths_json_fp)
 
     gene_dict = dict()
     reads_aligned = set()
@@ -37,7 +43,13 @@ def long_reads_strategy(config):
 
     # Prepare rows of tsv
     csv_rows = list()
-    csv_rows.append('MGE containing reads {}'.format(len(reads_aligned)))
+    csv_rows.append(['Statistics'])
+    arg_containing_reads_stats = reads_statistics(reads_aligned, reads_lengths)
+    for stat_name, stat_value in arg_containing_reads_stats.items():
+        csv_rows.append(['MGES_' + stat_name, stat_value])
+
+    csv_rows.append(['Mobimole'])
+
     gene_riches = [(header, gene_dict[header]) for header in gene_dict]
 
     # Output how many different MGEs are in the data, this is actually diversity!
@@ -63,6 +75,11 @@ def short_reads_stratedy(config):
         mge_genes[rec.name] = np.zeros(len(rec.seq))
 
     mges_sam_file = pysam.AlignmentFile(config['INPUT']['MGES_SAM_FILE'], 'r')
+
+    # Get reads lengths
+    reads_lengths = dict()
+    with open(config['INPUT']['READS_FILE'] + config['EXTENSION']['READS_LENGTH'], 'rt') as reads_lengths_json_fp:
+        reads_lengths = json.load(reads_lengths_json_fp)
 
     gene_hits = dict()
     reads_aligned_per_gene = dict()
@@ -95,7 +112,12 @@ def short_reads_stratedy(config):
 
     # Prepare rows of tsv
     csv_rows = list()
-    csv_rows.append('MGE containing reads {}'.format(len(reads_aligned)))
+    csv_rows.append(['Statistics'])
+    arg_containing_reads_stats = reads_statistics(reads_aligned, reads_lengths)
+    for stat_name, stat_value in arg_containing_reads_stats.items():
+        csv_rows.append(['MGES_' + stat_name, stat_value])
+
+    csv_rows.append(['Mobimole'])
     covered_gene_richness = [(header, gene_hits[header]) for header in covered_genes]
 
     # Output how many different MGEs are in the data, this is actually diversity!
