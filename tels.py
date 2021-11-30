@@ -184,10 +184,9 @@ def print_statistics(config, TELS_statistics):
 
         for stat_name, stat_value in TELS_statistics.items():
             if stat_name != 'READ_LENGTHS':
-                if '{' in stat_value:
-                    stat_value_dict = json.loads(stat_value)
-                    for stat_name, stat_value in stat_value_dict.items():
-                        line = [stat_name, stat_value]
+                if type(stat_value) is dict:
+                    for i_stat_name, i_stat_value in stat_value.items():
+                        line = [stat_name + '_' + i_stat_name, i_stat_value]
                         stats_writer.writerow(line)
                 else:
                     line = [stat_name, stat_value]
