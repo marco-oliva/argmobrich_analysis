@@ -16,12 +16,22 @@ def long_reads_strategy(config):
     for rec in SeqIO.parse(mge_combined_reference_fasta_filename, "fasta"):
         mges_gene_lengths[rec.name] = len(rec.seq)
 
-    mges_sam_file = pysam.AlignmentFile(config['INPUT']['MGES_SAM_FILE'], 'r')
-
     # Get reads lengths
     reads_lengths = dict()
     with open(config['OUTPUT']['OUT_DIR'] + '/' + config['INPUT']['INPUT_FILE_NAME_EXT'] + config['EXTENSION']['READS_LENGTH'], 'rt') as reads_lengths_json_fp:
         reads_lengths = json.load(reads_lengths_json_fp)
+
+    reads_aligned_to_args = dict()
+    if config['INPUT']['ARGS_SAM_FILE'] != '':
+        args_gene_lengths = dict()
+        args_reference_fasta_filename = config['DATABASE']['MEGARES']
+
+        for rec in SeqIO.parse(args_reference_fasta_filename, "fasta"):
+            args_gene_lengths[rec.name] = len(rec.seq)
+
+        args_sam_file = pysam.AlignmentFile(config['INPUT']['ARGS_SAM_FILE'], 'r')
+
+    mges_sam_file = pysam.AlignmentFile(config['INPUT']['MGES_SAM_FILE'], 'r')
 
     gene_dict = dict()
     reads_aligned = set()
@@ -141,6 +151,7 @@ def main():
     parser = argparse.ArgumentParser(description='Colocalizations Finder.')
     parser.add_argument('-r', help='Reads file', dest='reads_file', required=True)
     parser.add_argument('-m', help='MGEs alignment file', dest='mges_sam', required=True)
+    parser.add_argument('-a', help='ARGs alignment file', dest='args_sam', required=True)
     parser.add_argument('-o', help='Output file prefix', dest='out_prefix', required=True)
     parser.add_argument('-c', help='Config file', dest='config_path', required=True)
     args = parser.parse_args()
@@ -152,6 +163,7 @@ def main():
 
     config['INPUT'] = dict()
     config['INPUT']['MGES_SAM_FILE'] = args.mges_sam
+    config['INPUT']['ARGS_SAM_FILE'] = args.args_sam
     config['INPUT']['INPUT_FILE_NAME_EXT'] = os.path.basename(args.reads_file)
     config['INPUT']['INPUT_FILE_NAME_NO_EXT'] = os.path.splitext(config['INPUT']['INPUT_FILE_NAME_EXT'])[0]
     config['INPUT']['INPUT_FILE_PATH'] = os.path.dirname(os.path.abspath(args.reads_file))

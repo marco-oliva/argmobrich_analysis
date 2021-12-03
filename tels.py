@@ -110,36 +110,51 @@ def align_to_mges(config, TELS_statistcs):
     )
     execute_command(align_command, out_file_path=out_file)
 
-def gen_resistome(config, TELS_statistcs):
-    gen_resistome_script = config['SCRIPTS']['GEN_RESISTOME']
-    sam_file = config['OUTPUT']['OUT_DIR'] + '/' + config['INPUT']['INPUT_FILE_NAME_EXT'] + config['EXTENSION']['A_TO_MEGARES']
+# def gen_resistome(config, TELS_statistcs):
+#     gen_resistome_script = config['SCRIPTS']['GEN_RESISTOME']
+#     sam_file = config['OUTPUT']['OUT_DIR'] + '/' + config['INPUT']['INPUT_FILE_NAME_EXT'] + config['EXTENSION']['A_TO_MEGARES']
+#     out_file = config['OUTPUT']['OUT_DIR'] + '/' + config['INPUT']['INPUT_FILE_NAME_EXT']
+#
+#     gen_resistome_command = 'python {script} -s {sam_file} -o {out_name} -c {config_path} -r {reads_file}'.format(
+#         script=gen_resistome_script,
+#         sam_file=sam_file,
+#         out_name=out_file,
+#         config_path=config['MISC']['CONFIG_FILE'],
+#         reads_file=config['INPUT']['INPUT_FILE']
+#     )
+#     execute_command(gen_resistome_command)
+
+
+# def gen_mobilome(config, TELS_statistcs):
+#     gen_mobilome_script = config['SCRIPTS']['GEN_MOBILOME']
+#     sam_file_mges = config['OUTPUT']['OUT_DIR'] + '/' + config['INPUT']['INPUT_FILE_NAME_EXT'] + \
+#                         config['EXTENSION']['A_TO_MGES']
+#     out_file = config['OUTPUT']['OUT_DIR'] + '/' + config['INPUT']['INPUT_FILE_NAME_EXT']
+#
+#     gen_mobilome_command = 'python {script} -m {sam_mges} -o {out_name}  -c {config_path} -r {reads_file}'.format(
+#         script=gen_mobilome_script,
+#         sam_mges=sam_file_mges,
+#         out_name=out_file,
+#         config_path=config['MISC']['CONFIG_FILE'],
+#         reads_file=config['INPUT']['INPUT_FILE']
+#     )
+#     execute_command(gen_mobilome_command)
+
+def gen_resistome_and_mobilome(config, TELS_statistcs):
+    gen_resistome_and_mobilome_script = config['SCRIPTS']['GEN_RESISTOME_AND_MOBILOME']
+    sam_file_mges = config['OUTPUT']['OUT_DIR'] + '/' + config['INPUT']['INPUT_FILE_NAME_EXT'] + config['EXTENSION']['A_TO_MGES']
+    sam_file_args = config['OUTPUT']['OUT_DIR'] + '/' + config['INPUT']['INPUT_FILE_NAME_EXT'] + config['EXTENSION']['A_TO_MEGARES']
     out_file = config['OUTPUT']['OUT_DIR'] + '/' + config['INPUT']['INPUT_FILE_NAME_EXT']
 
-    gen_resistome_command = 'python {script} -s {sam_file} -o {out_name} -c {config_path} -r {reads_file}'.format(
-        script=gen_resistome_script,
-        sam_file=sam_file,
-        out_name=out_file,
-        config_path=config['MISC']['CONFIG_FILE'],
-        reads_file=config['INPUT']['INPUT_FILE']
-    )
-    execute_command(gen_resistome_command)
-
-
-def gen_mobilome(config, TELS_statistcs):
-    gen_mobilome_script = config['SCRIPTS']['GEN_MOBILOME']
-    sam_file_mges = config['OUTPUT']['OUT_DIR'] + '/' + config['INPUT']['INPUT_FILE_NAME_EXT'] + \
-                        config['EXTENSION']['A_TO_MGES']
-    out_file = config['OUTPUT']['OUT_DIR'] + '/' + config['INPUT']['INPUT_FILE_NAME_EXT']
-
-    gen_mobilome_command = 'python {script} -m {sam_mges} -o {out_name}  -c {config_path} -r {reads_file}'.format(
-        script=gen_mobilome_script,
+    gen_mobilome_command = 'python {script} -m {sam_mges} -a {sam_args} -o {out_name}  -c {config_path} -r {reads_file}'.format(
+        script=gen_resistome_and_mobilome_script,
         sam_mges=sam_file_mges,
+        sam_args=sam_file_args,
         out_name=out_file,
         config_path=config['MISC']['CONFIG_FILE'],
         reads_file=config['INPUT']['INPUT_FILE']
     )
     execute_command(gen_mobilome_command)
-
 
 def gen_colocalizations(config, TELS_statistcs):
     gen_colocalizations_script = config['SCRIPTS']['FIND_COLOCALIZATIONS']
@@ -215,6 +230,7 @@ def main():
     config['SCRIPTS']['GEN_RESISTOME'] = os.path.join(config['SCRIPTS']['BASE_PATH'], config['SCRIPTS']['GEN_RESISTOME'])
     config['SCRIPTS']['FIND_COLOCALIZATIONS'] = os.path.join(config['SCRIPTS']['BASE_PATH'], config['SCRIPTS']['FIND_COLOCALIZATIONS'])
     config['SCRIPTS']['COLOCALIZATIONS_RICHNESS'] = os.path.join(config['SCRIPTS']['BASE_PATH'], config['SCRIPTS']['COLOCALIZATIONS_RICHNESS'])
+    config['SCRIPTS']['GEN_RESISTOME_AND_MOBILOME'] = os.path.join(config['SCRIPTS']['BASE_PATH'], config['SCRIPTS']['GEN_RESISTOME_AND_MOBILOME'])
 
     config['INPUT'] = dict()
     config['INPUT']['INPUT_FILE_NAME_EXT'] = os.path.basename(args.input_path)
@@ -295,13 +311,17 @@ def main():
         root_logger.info("Aligning to KEGG")
         align_to_kegg(config, TELS_statistcs)
 
-    if config['PIPELINE_STEPS']['COMPUTE_RESISTOME'] in ['True', 'true']:
-        root_logger.info("Generating Resistome")
-        gen_resistome(config, TELS_statistcs)
+    # if config['PIPELINE_STEPS']['COMPUTE_RESISTOME'] in ['True', 'true']:
+    #     root_logger.info("Generating Resistome")
+    #     gen_resistome(config, TELS_statistcs)
+    #
+    # if config['PIPELINE_STEPS']['COMPUTE_MOBILOME'] in ['True', 'true']:
+    #     root_logger.info("Generating Mobilome")
+    #     gen_mobilome(config, TELS_statistcs)
 
-    if config['PIPELINE_STEPS']['COMPUTE_MOBILOME'] in ['True', 'true']:
-        root_logger.info("Generating Mobilome")
-        gen_mobilome(config, TELS_statistcs)
+    if config['PIPELINE_STEPS']['COMPUTE_RESISTOME_AND_MOBILOME'] in ['True', 'true']:
+        root_logger.info("Generating Resistome")
+        gen_resistome_and_mobilome(config, TELS_statistcs)
 
     if config['PIPELINE_STEPS']['COMPUTE_COLOCALIZATIONS'] in ['True', 'true']:
         root_logger.info("Generating Colocalizations")
