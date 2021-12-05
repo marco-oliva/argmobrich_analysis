@@ -86,7 +86,7 @@ def is_gz_file(filepath):
 
 
 def reject_outliers(data, m=2.):
-    data = np.array(data)
+    data = np.array(data, dtype=np.int64)
     d = np.abs(data - np.median(data))
     mdev = np.median(d)
     s = d / mdev if mdev else 0.
