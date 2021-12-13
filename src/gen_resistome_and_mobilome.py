@@ -21,20 +21,7 @@ def long_reads_strategy_resistome(config):
     sam_file = pysam.AlignmentFile(config['INPUT']['ARGS_SAM_FILE'], 'r')
 
     # Create ontology dictionary from MEGARes ontology file
-    megares_ontology = {}
-    ontology_filename = config['DATABASE']['MEGARES_ONTOLOGY']
-    with open(ontology_filename, 'r') as ontology_tsv:
-        ontology_reader = csv.reader(ontology_tsv)
-        for row in ontology_reader:
-            # Skip column names
-            if row[0] == "header":
-                continue
-
-            # Fill in our dict
-            megares_ontology[row[0]] = {"class": row[1],
-                                        "mechanism": row[2],
-                                        "group": row[3]
-                                        }
+    megares_ontology, _ = read_megares_ontology(config)
 
     # Get reads lengths
     reads_lengths = dict()
@@ -151,20 +138,7 @@ def short_reads_stratedy_resistome(config):
     sam_file = pysam.AlignmentFile(config['INPUT']['ARGS_SAM_FILE'], 'r')
 
     # Create ontology dictionary from MEGARes ontology file
-    megares_ontology = {}
-    ontology_filename = config['DATABASE']['MEGARES_ONTOLOGY']
-    with open(ontology_filename, 'r') as ontology_tsv:
-        ontology_reader = csv.reader(ontology_tsv)
-        for row in ontology_reader:
-            # Skip column names
-            if row[0] == "header":
-                continue
-
-            # FIll in our dict
-            megares_ontology[row[0]] = {"class": row[1],
-                                        "mechanism": row[2],
-                                        "group": row[3]
-                                        }
+    megares_ontology, _ = read_megares_ontology(config)
 
     reads_lengths = dict()
     with open(config['OUTPUT']['OUT_DIR'] + '/' + config['INPUT']['INPUT_FILE_NAME_EXT'] + config['EXTENSION']['READS_LENGTH'], 'rt') as reads_lengths_json_fp:

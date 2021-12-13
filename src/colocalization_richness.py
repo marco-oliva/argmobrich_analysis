@@ -59,7 +59,6 @@ class Colocalization:
 
 
 def main():
-
     parser = argparse.ArgumentParser(description='Colocalizations Finder.')
     parser.add_argument('-i', help='Colocalizations csv file', dest='coloc_csv_path', required=True)
     parser.add_argument('-c', help='Config file', dest='config_path', required=True)

@@ -13,6 +13,9 @@ def run_blat(input_file, out_pls_file):
     execute_command(blat_command)
     return out_pls_file
 
+def run_usearch(cluster_input_files, output_dir):
+    return 0
+
 def main():
     parser = argparse.ArgumentParser(description='Cluster reads based on read length')
     parser.add_argument('-r', help='Reads File (FASTA/FASTQ)', type=str, dest='reads_file', required=True)
@@ -56,9 +59,9 @@ def main():
             if kmeans.labels_[j] == i:
                 sequences.append(read_lengths[1][j])
 
-        output_filename = output_dir + '/' + os.path.splitext(os.path.basename(reads_file))[0] + '_' + str(i) + '.fasta'
+        output_filename = output_dir + '/' + os.path.splitext(os.path.basename(reads_file))[0] + '_' + str(i) + '.fasta.gz'
         fasta_files.append(output_filename)
-        with open(output_filename, 'w') as output_fasta:
+        with gzip.open(output_filename, 'wt') as output_fasta:
             SeqIO.write(sequences, output_fasta, 'fasta')
 
     # run blat on each file, using multiple threads
@@ -67,7 +70,7 @@ def main():
     for i in range(0, num_clusters):
         # here blat was called
         out_pls = output_dir + '/pls_files/' + str(i) + '.pls'
-        fasta_filename = output_dir + '/' + os.path.splitext(os.path.basename(reads_file))[0] + '_' + str(i) + '.fasta'
+        fasta_filename = output_dir + '/' + os.path.splitext(os.path.basename(reads_file))[0] + '_' + str(i) + '.fasta.gz'
         input_tuples.append((fasta_filename, out_pls))
 
     with Pool(args.num_threads) as threads_pool:

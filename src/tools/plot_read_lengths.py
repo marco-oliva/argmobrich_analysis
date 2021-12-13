@@ -6,18 +6,7 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.axes_grid1.inset_locator import (inset_axes, InsetPosition, mark_inset)
 import gzip
 import numpy as np
-
-
-def is_gz_file(filepath):
-    with open(filepath, 'rb') as test_f:
-        return test_f.read(2) == b'\x1f\x8b'
-
-def reject_outliers(data, m = 2.):
-    data = np.array(data)
-    d = np.abs(data - np.median(data))
-    mdev = np.median(d)
-    s = d/mdev if mdev else 0.
-    return data[s<m]
+from ..common import *
 
 
 def main():

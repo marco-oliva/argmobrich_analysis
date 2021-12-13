@@ -121,7 +121,7 @@ def read_megares_ontology(config):
 
             # FIll in our dict
             megares_ontology[row[0]] = {"class": cl,
-                                        "mech": mech,
+                                        "mechanism": mech,
                                         "group": group
                                         }
     return megares_ontology, hierarchy_dict
