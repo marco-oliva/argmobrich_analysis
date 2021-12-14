@@ -11,11 +11,11 @@ import pandas as pd
 import argparse
 import configparser
 
-from ..common import *
+from common import *
 
 
 # Hardcoded stuff
-base_path = '/home/marco.oliva/blue/boucher/data/Noyes_TELS_I/mock_reference_analysis/ZymoBIOMICS.STD.refseq.v2/Genomes'
+base_path = '/home/marco/Downloads/Noyes_TELS_I/ZymoBIOMICS.STD.refseq.v2/Genomes'
 alignment_dir = base_path + '/' + 'alignment_files'
 
 MEGARES_ext = '_ato_MEGARES.sam'
@@ -33,11 +33,10 @@ reference_files_list = ['Bacillus_subtilis_complete_genome.fasta',
                         'Salmonella_enterica_complete_genome.fasta',
                         'Staphylococcus_aureus_complete_genome.fasta']
 
-alignment_files_base_path = '/blue/boucher/marco.oliva/data/Noyes_TELS_I/mock_reference_analysis/MOCK_ato_WGS'
+alignment_files_base_path = '/home/marco/Downloads/Noyes_TELS_I/MOCK_ato_WGS'
 
-sample_files_base_path = '/blue/boucher/marco.oliva/data/Noyes_TELS_I/ccs_fastqs/'
-sample_files_list = ['deduplicated_sequel-demultiplex.MOCK_D01.ccs.fastq']
-sample_name = 'deduplicated_sequel-demultiplex.MOCK_D01.ccs.fastq'
+sample_files_base_path = '/home/marco/Downloads/Noyes_TELS_I/'
+sample_name = 'deduplicated_sequel-demultiplex.MOCK_E01.ccs.fastq'
 
 COLOC_DISTANCE = 500
 
@@ -64,6 +63,9 @@ class Gene:
 
     def __str__(self):
         return self.name + ',' + self.type + ',' + str(self.start_pos) + ',' + str(self.end_pos)
+
+    def __repr__(self):
+        return self.__str__()
 
     def __hash__(self):
         return hash(str(self))
@@ -117,7 +119,7 @@ def read_sam(file_name, genes_lengths, threshold, gene_type='unknown'):
 
 
 def gen_resistome(config, organism_name, genes_list):
-    megares_ontology, _ = read_megares_ontology(config['DATABASE']['MEGARES_ONTOLOGY'])
+    megares_ontology, _ = read_megares_ontology(config)
 
     gene_dict = {}
     class_dict = {}
@@ -312,22 +314,25 @@ def get_positions(file_name, read_set):
                 reads_positions[read.query_name] = (read.reference_start, read.reference_end)
     return reads_positions
 
+
 # It is a linear scan at the moment, make it at least log. It's a sorted array of ranges.
 def search_annotation(annotation, start, end):
     ann_it = 0
     genes_in_range = list()
     while ann_it < len(annotation):
         current_gene = annotation[ann_it]
+        if current_gene.start_pos > start:
+            genes_in_range.append(current_gene)
+        elif current_gene.end_pos > start:
+            genes_in_range.append(current_gene)
         if current_gene.end_pos > end:
             break
-        if annotation[ann_it].start_pos > start:
-            genes_in_range.append(annotation[ann_it])
-
         ann_it += 1
+    return genes_in_range
 
 def main():
     parser = argparse.ArgumentParser(description='WGS Analysis, many hardcoded things')
-    parser.add_argument('-c', help='Config file', dest='config_path', default='./config.ini')
+    parser.add_argument('-c', help='Config file', dest='config_path', default='./config_test.ini')
     parser.add_argument('-o', help="Output file", default='', dest='out_file', type=str)
     args = parser.parse_args()
 
@@ -377,15 +382,15 @@ def main():
         complete_genomes_annotations[file_name] = complete_genome_annotation
 
         # Extract resistome, mobilome and colocalizations and output to file
-        gen_resistome(config, file_name, complete_genome_annotation)
-        gen_mobilome(config, file_name, complete_genome_annotation)
-        gen_colocalizations(config, file_name, complete_genome_annotation)
+#        gen_resistome(config, file_name, complete_genome_annotation)
+#        gen_mobilome(config, file_name, complete_genome_annotation)
+#        gen_colocalizations(config, file_name, complete_genome_annotation)
 
 
     # Get sample colocalizations
     S_colocalizations_list = list()
     S_reads_set = set()
-    S_colocalizations_path = ''
+    S_colocalizations_path = '/home/marco/Downloads/Noyes_TELS_I/deduplicated_sequel-demultiplex.MOCK_E01.ccs.fastq_colocalizations.csv'
     with open(S_colocalizations_path, 'rt') as coloc_csv_hanlde:
         csv_reader = csv.reader(coloc_csv_hanlde)
         header = next(csv_reader)
@@ -396,7 +401,16 @@ def main():
             mges_list = row[3].split(';')
             mges_pos = row[4].split(';')
 
-            S_colocalizations_list.append([read, args_list, args_pos, mges_list, mges_pos])
+            S_colocalizations_genes_list = list()
+            for idx, arg in enumerate(args_list):
+                S_colocalizations_genes_list.append(
+                    Gene(arg, Gene.ARG_TYPE_STR, args_pos[idx].split(':')[0], args_pos[idx].split(':')[1]))
+
+            for idx, mge in enumerate(mges_list):
+                S_colocalizations_genes_list.append(
+                    Gene(mge, Gene.MGE_TYPE_STR, mges_pos[idx].split(':')[0], mges_pos[idx].split(':')[1]))
+
+            S_colocalizations_list.append((read, sorted(S_colocalizations_genes_list)))
             S_reads_set.add(read)
 
     # Get per read positions
@@ -408,14 +422,23 @@ def main():
 
 
     # Search colocalizations in reference genomes
-    for colocalization in S_colocalizations_list:
-        read = colocalization[0]
-        # Go trough all the references
+    for read, colocalization in S_colocalizations_list:
+        # Go trough all the references and look for the colocalization
         for reference_file in reference_files_list:
             ref_annotation = complete_genomes_annotations[reference_file]
             if read in reads_positions[reference_file]:
                 read_pos = reads_positions[reference_file][read]
-                print(read, read_pos, )
+                genes = search_annotation(ref_annotation, read_pos[0], read_pos[1])
+
+                adjusted_colocalization = list()
+                for gene in colocalization:
+                    adjusted_colocalization.append(Gene(gene.name,
+                                                        gene.type,
+                                                        int(gene.start_pos) + int(read_pos[0]),
+                                                        int(gene.end_pos) + int(read_pos[0])))
+
+                # Check if genes and colocalization align
+                print(reference_file[:-6] + '\n{' + str(genes) + '}\n{' + str(adjusted_colocalization) + '}\n====================')
 
 
 if __name__ == '__main__':
