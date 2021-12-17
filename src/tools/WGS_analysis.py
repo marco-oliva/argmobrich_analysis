@@ -436,9 +436,30 @@ def main():
                                                         gene.type,
                                                         int(gene.start_pos) + int(read_pos[0]),
                                                         int(gene.end_pos) + int(read_pos[0])))
+                requires_snp_confirmation = False
+                for gene in genes + adjusted_colocalization:
+                    if 'RequiresSNPConfirmation' in gene.name:
+                        requires_snp_confirmation = True
+                        break
 
-                # Check if genes and colocalization align
-                print(reference_file[:-6] + '\n{' + str(genes) + '}\n{' + str(adjusted_colocalization) + '}\n====================')
+                metal_or_biocides = False
+                for gene in genes + adjusted_colocalization:
+                    if 'Metals' in gene.name:
+                        metal_or_biocides = True
+                        break
+                    if 'Biocides' in gene.name:
+                        metal_or_biocides = True
+                        break
+                    if 'Biocide_and_metal_resistance' in gene.name:
+                        metal_or_biocides = True
+                        break
+                    if 'Drug_and_biocide_resistance' in gene.name:
+                        metal_or_biocides = True
+                        break
+
+
+                if not requires_snp_confirmation:
+                    print(reference_file[:-6] + '\n{' + str(genes) + '}\n{' + str(adjusted_colocalization) + '}\n====================')
 
 
 if __name__ == '__main__':
