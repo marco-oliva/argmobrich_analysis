@@ -4,7 +4,7 @@ from common import *
 import argparse
 
 def main():
-    parser = argparse.ArgumentParser(description='Compute resistome')
+    parser = argparse.ArgumentParser(description='Filter reads aligned in samfile')
     parser.add_argument('-s', help='Alignment file', dest='sam_file', required=True)
     parser.add_argument('-n', help='Library name', dest='lib_name', required=True)
     parser.add_argument('-w', help='Work directory', dest='work_dir', required=True)
