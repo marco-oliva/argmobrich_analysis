@@ -7,6 +7,7 @@ from mpl_toolkits.axes_grid1.inset_locator import (inset_axes, InsetPosition, ma
 import gzip
 import numpy as np
 from common import *
+import os
 
 
 def main():
@@ -17,22 +18,30 @@ def main():
     parser.add_argument('--title', help='Plot title', default='', dest='title', type=str)
     parser.add_argument('--inset', help="Add inset. Left endpoint of the interval", dest='inset', default=0, type=int)
     parser.add_argument('--inset-position', help='Inset position', default='0.3,0.5,0.6,0.4', dest='inset_pos', type=str)
-    parser.add_argument('input', help='Input Fastq file')
+    parser.add_argument('--x-scale', help='Set X axis scale, pyplot argument [log,linear]', dest='x_scale', default='linear')
+    parser.add_argument('--y-scale', help='Set Y axis scale, pyplot argument [log,linear]', dest='y_scale', default='linear')
+    parser.add_argument('-i', '--input', nargs='+', help='Input Fastq files.', dest='input_files', required=True)
     args = parser.parse_args()
 
-    file_path = args.input
-    if is_gz_file(file_path):
-        handle = gzip.open(file_path, 'rt')
-    else:
-        handle = open(file_path, 'rt')
+    # Sanity check on input files
+    for file_path in args.input_files:
+        if not os.path.exists(file_path):
+            print('The file {} does not exist!'.format(file_path))
+            exit(FileNotFoundError)
 
     read_lengths = list()
     inset_read_lengths = list()
-    for record in SeqIO.parse(handle, "fastq"):
-        read_length = len(record.seq)
-        read_lengths.append(read_length)
-        if args.inset != 0 and read_length > args.inset:
-            inset_read_lengths.append(read_length)
+    for file_path in args.input_files:
+        if is_gz_file(file_path):
+            handle = gzip.open(file_path, 'rt')
+        else:
+            handle = open(file_path, 'rt')
+
+        for record in SeqIO.parse(handle, "fastq"):
+            read_length = len(record.seq)
+            read_lengths.append(read_length)
+            if args.inset != 0 and read_length > args.inset:
+                inset_read_lengths.append(read_length)
 
     if args.std_dev != 0:
         read_lengths = reject_outliers(read_lengths, args.std_dev)
@@ -45,6 +54,10 @@ def main():
     ax.set_xlabel("Read length (nt)")
     ax.set_ylabel("Frequency (Number of Reads)")
     ax.hist(read_lengths, bins=args.bins)
+
+    # Set Axis scale
+    ax.set_xscale(args.x_scale)
+    ax.set_yscale(args.y_scale)
 
     if args.inset != 0 and len(inset_read_lengths) > 0:
         # Setup inset histogram
