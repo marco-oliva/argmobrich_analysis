@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.axes_grid1.inset_locator import (inset_axes, InsetPosition, mark_inset)
 import gzip
 import numpy as np
-from ..common import *
+from common import *
 
 
 def main():

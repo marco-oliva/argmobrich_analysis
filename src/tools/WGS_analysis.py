@@ -11,7 +11,7 @@ import pandas as pd
 import argparse
 import configparser
 
-from ..common import *
+from common import *
 
 
 # Hardcoded stuff
