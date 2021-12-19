@@ -78,7 +78,7 @@ def main():
     if args.out_file != '':
         plt.savefig(args.out_file)
     else:
-        plt.savefig(file_path + '.hist.pdf')
+        plt.savefig(args.input_files[0] + '.hist.pdf')
 
 
 if __name__ == '__main__':
