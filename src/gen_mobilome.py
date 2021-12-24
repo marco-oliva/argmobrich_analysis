@@ -18,18 +18,9 @@ def long_reads_strategy(config):
 
     # Get reads lengths
     reads_lengths = dict()
-    with open(config['OUTPUT']['OUT_DIR'] + '/' + config['INPUT']['INPUT_FILE_NAME_EXT'] + config['EXTENSION']['READS_LENGTH'], 'rt') as reads_lengths_json_fp:
-        reads_lengths = json.load(reads_lengths_json_fp)
-
-    reads_aligned_to_args = dict()
-    if config['INPUT']['ARGS_SAM_FILE'] != '':
-        args_gene_lengths = dict()
-        args_reference_fasta_filename = config['DATABASE']['MEGARES']
-
-        for rec in SeqIO.parse(args_reference_fasta_filename, "fasta"):
-            args_gene_lengths[rec.name] = len(rec.seq)
-
-        args_sam_file = pysam.AlignmentFile(config['INPUT']['ARGS_SAM_FILE'], 'r')
+    if os.path.isfile(config['OUTPUT']['OUT_DIR'] + '/' + config['INPUT']['INPUT_FILE_NAME_EXT'] + config['EXTENSION']['READS_LENGTH']):
+        with open(config['OUTPUT']['OUT_DIR'] + '/' + config['INPUT']['INPUT_FILE_NAME_EXT'] + config['EXTENSION']['READS_LENGTH'], 'rt') as reads_lengths_json_fp:
+            reads_lengths = json.load(reads_lengths_json_fp)
 
     mges_sam_file = pysam.AlignmentFile(config['INPUT']['MGES_SAM_FILE'], 'r')
 
@@ -43,7 +34,6 @@ def long_reads_strategy(config):
         if config['MISC']['USE_SECONDARY_ALIGNMENTS'] not in ['True', 'true'] and read.is_secondary:
             continue
 
-        # check coverage
         if (float(read.reference_length) / mges_gene_lengths[read.reference_name]) > float(
                 config['MISC']['GLOBAL_MGE_THRESHOLD']):
             if not read.reference_name in gene_dict:
@@ -54,10 +44,11 @@ def long_reads_strategy(config):
 
     # Prepare rows of tsv
     csv_rows = list()
-    csv_rows.append(['Statistics'])
-    arg_containing_reads_stats = reads_statistics(reads_aligned, reads_lengths)
-    for stat_name, stat_value in arg_containing_reads_stats.items():
-        csv_rows.append(['MGES_' + stat_name, stat_value])
+    if len(reads_lengths) > 0:
+        csv_rows.append(['Statistics'])
+        arg_containing_reads_stats = reads_statistics(reads_aligned, reads_lengths)
+        for stat_name, stat_value in arg_containing_reads_stats.items():
+            csv_rows.append(['MGES_' + stat_name, stat_value])
 
     csv_rows.append(['Mobimole'])
 
@@ -89,8 +80,10 @@ def short_reads_stratedy(config):
 
     # Get reads lengths
     reads_lengths = dict()
-    with open(config['OUTPUT']['OUT_DIR'] + '/' + config['INPUT']['INPUT_FILE_NAME_EXT'] + config['EXTENSION']['READS_LENGTH'], 'rt') as reads_lengths_json_fp:
-        reads_lengths = json.load(reads_lengths_json_fp)
+    if os.path.isfile(config['OUTPUT']['OUT_DIR'] + '/' + config['INPUT']['INPUT_FILE_NAME_EXT'] + config['EXTENSION'][
+        'READS_LENGTH']):
+        with open(config['OUTPUT']['OUT_DIR'] + '/' + config['INPUT']['INPUT_FILE_NAME_EXT'] + config['EXTENSION']['READS_LENGTH'], 'rt') as reads_lengths_json_fp:
+            reads_lengths = json.load(reads_lengths_json_fp)
 
     gene_hits = dict()
     reads_aligned_per_gene = dict()
@@ -123,10 +116,11 @@ def short_reads_stratedy(config):
 
     # Prepare rows of tsv
     csv_rows = list()
-    csv_rows.append(['Statistics'])
-    arg_containing_reads_stats = reads_statistics(reads_aligned, reads_lengths)
-    for stat_name, stat_value in arg_containing_reads_stats.items():
-        csv_rows.append(['MGES_' + stat_name, stat_value])
+    if len(reads_lengths) > 0:
+        csv_rows.append(['Statistics'])
+        arg_containing_reads_stats = reads_statistics(reads_aligned, reads_lengths)
+        for stat_name, stat_value in arg_containing_reads_stats.items():
+            csv_rows.append(['MGES_' + stat_name, stat_value])
 
     csv_rows.append(['Mobimole'])
     covered_gene_richness = [(header, gene_hits[header]) for header in covered_genes]
@@ -151,7 +145,6 @@ def main():
     parser = argparse.ArgumentParser(description='Colocalizations Finder.')
     parser.add_argument('-r', help='Reads file', dest='reads_file', required=True)
     parser.add_argument('-m', help='MGEs alignment file', dest='mges_sam', required=True)
-    parser.add_argument('-a', help='ARGs alignment file', dest='args_sam', required=True)
     parser.add_argument('-o', help='Output file prefix', dest='out_prefix', required=True)
     parser.add_argument('-c', help='Config file', dest='config_path', required=True)
     args = parser.parse_args()
@@ -163,7 +156,6 @@ def main():
 
     config['INPUT'] = dict()
     config['INPUT']['MGES_SAM_FILE'] = args.mges_sam
-    config['INPUT']['ARGS_SAM_FILE'] = args.args_sam
     config['INPUT']['INPUT_FILE_NAME_EXT'] = os.path.basename(args.reads_file)
     config['INPUT']['INPUT_FILE_NAME_NO_EXT'] = os.path.splitext(config['INPUT']['INPUT_FILE_NAME_EXT'])[0]
     config['INPUT']['INPUT_FILE_PATH'] = os.path.dirname(os.path.abspath(args.reads_file))
