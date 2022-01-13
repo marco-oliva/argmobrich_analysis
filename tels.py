@@ -89,7 +89,6 @@ def align_to_kegg(config, TELS_statistcs):
     execute_command(align_command, out_file_path=out_file)
     return out_file
 
-
 def align_to_mges(config, TELS_statistcs):
     aligner_exe = config['TOOLS']['ALIGNER']
     aligner_flags = config['TOOLS']['ALIGNER_FLAGS']
