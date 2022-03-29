@@ -1,12 +1,8 @@
 #!/usr/bin/env python3
-from Bio import SeqIO
-import statistics
-from scipy.stats import kurtosis
-from scipy.stats import skew
-import configparser
 import json
-
+from Bio import SeqIO
 from src.common import *
+
 
 def find_duplicates(config, TELS_statistcs):
     import shutil
@@ -110,34 +106,34 @@ def align_to_mges(config, TELS_statistcs):
     )
     execute_command(align_command, out_file_path=out_file)
 
- def gen_resistome(config, TELS_statistcs):
-     gen_resistome_script = config['SCRIPTS']['GEN_RESISTOME']
-     sam_file = config['OUTPUT']['OUT_DIR'] + '/' + config['INPUT']['INPUT_FILE_NAME_EXT'] + config['EXTENSION']['A_TO_MEGARES']
-     out_file = config['OUTPUT']['OUT_DIR'] + '/' + config['INPUT']['INPUT_FILE_NAME_EXT']
+def gen_resistome(config, TELS_statistcs):
+    gen_resistome_script = config['SCRIPTS']['GEN_RESISTOME']
+    sam_file = config['OUTPUT']['OUT_DIR'] + '/' + config['INPUT']['INPUT_FILE_NAME_EXT'] + config['EXTENSION']['A_TO_MEGARES']
+    out_file = config['OUTPUT']['OUT_DIR'] + '/' + config['INPUT']['INPUT_FILE_NAME_EXT']
 
-     gen_resistome_command = 'python {script} -s {sam_file} -o {out_name} -c {config_path} -r {reads_file}'.format(
-         script=gen_resistome_script,
-         sam_file=sam_file,
-         out_name=out_file,
-         config_path=config['MISC']['CONFIG_FILE'],
-         reads_file=config['INPUT']['INPUT_FILE']
-     )
-     execute_command(gen_resistome_command)
+    gen_resistome_command = 'python {script} -s {sam_file} -o {out_name} -c {config_path} -r {reads_file}'.format(
+        script=gen_resistome_script,
+        sam_file=sam_file,
+        out_name=out_file,
+        config_path=config['MISC']['CONFIG_FILE'],
+        reads_file=config['INPUT']['INPUT_FILE']
+    )
+    execute_command(gen_resistome_command)
 
 
- def gen_mobilome(config, TELS_statistcs):
-     gen_mobilome_script = config['SCRIPTS']['GEN_MOBILOME']
-     sam_file_mges = config['OUTPUT']['OUT_DIR'] + '/' + config['INPUT']['INPUT_FILE_NAME_EXT'] + config['EXTENSION']['A_TO_MGES']
-     out_file = config['OUTPUT']['OUT_DIR'] + '/' + config['INPUT']['INPUT_FILE_NAME_EXT']
+def gen_mobilome(config, TELS_statistcs):
+    gen_mobilome_script = config['SCRIPTS']['GEN_MOBILOME']
+    sam_file_mges = config['OUTPUT']['OUT_DIR'] + '/' + config['INPUT']['INPUT_FILE_NAME_EXT'] + config['EXTENSION']['A_TO_MGES']
+    out_file = config['OUTPUT']['OUT_DIR'] + '/' + config['INPUT']['INPUT_FILE_NAME_EXT']
 
-     gen_mobilome_command = 'python {script} -m {sam_mges} -o {out_name}  -c {config_path} -r {reads_file}'.format(
-         script=gen_mobilome_script,
-         sam_mges=sam_file_mges,
-         out_name=out_file,
-         config_path=config['MISC']['CONFIG_FILE'],
-         reads_file=config['INPUT']['INPUT_FILE']
-     )
-     execute_command(gen_mobilome_command)
+    gen_mobilome_command = 'python {script} -m {sam_mges} -o {out_name}  -c {config_path} -r {reads_file}'.format(
+        script=gen_mobilome_script,
+        sam_mges=sam_file_mges,
+        out_name=out_file,
+        config_path=config['MISC']['CONFIG_FILE'],
+        reads_file=config['INPUT']['INPUT_FILE']
+    )
+    execute_command(gen_mobilome_command)
 
 def gen_resistome_and_mobilome(config, TELS_statistcs):
     gen_resistome_and_mobilome_script = config['SCRIPTS']['GEN_RESISTOME_AND_MOBILOME']
@@ -260,6 +256,7 @@ def main():
 
     reads_file_handle.close()
 
+    mkdir_p(config['OUTPUT']['OUT_DIR'])
     with open(config['OUTPUT']['OUT_DIR'] + '/' + config['INPUT']['INPUT_FILE_NAME_EXT'] + config['EXTENSION']['READS_LENGTH'], 'w') as read_lengths_fp:
         json.dump(TELS_statistcs['READ_LENGTHS'], read_lengths_fp)
 
