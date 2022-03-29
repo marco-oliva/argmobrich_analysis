@@ -156,23 +156,27 @@ def reads_statistics(read_sets, read_lengths_dict):
 
     std_deviations = 4
     no_prfx = 'NO_OUTLIERS_{}_STDV_'.format(std_deviations)
-    if len(read_lengths) >= 1:
+    if len(read_lengths) > 1:
         read_lengths = reject_outliers(read_lengths, 4)
 
-        stats_dict['NUM_OF_READS'] = str(len(read_lengths))
-        stats_dict['READ_LENGTH_MEAN'] = str(statistics.mean(read_lengths))
-        stats_dict['READ_LENGTH_MEDIAN'] = str(statistics.median(read_lengths))
-        stats_dict['READ_LENGTH_RANGE'] = str((min(read_lengths), max(read_lengths)))
+        stats_dict[no_prfx + 'NUM_OF_READS'] = str(len(read_lengths))
+        stats_dict[no_prfx + 'READ_LENGTH_MEAN'] = str(statistics.mean(read_lengths))
+        stats_dict[no_prfx + 'READ_LENGTH_MEDIAN'] = str(statistics.median(read_lengths))
+        stats_dict[no_prfx + 'READ_LENGTH_RANGE'] = str((min(read_lengths), max(read_lengths)))
 
-        if len(read_lengths) >= 2:
-            stats_dict[no_prfx + 'READ_LENGTH_STD_DEV'] = str(statistics.stdev(read_lengths))
-            stats_dict[no_prfx + 'READ_LENGTH_VARIANCE'] = str(statistics.variance(read_lengths))
-            stats_dict[no_prfx + 'READ_LENGTH_SKEW'] = str(skew(read_lengths))
-            stats_dict[no_prfx + 'READ_LENGTH_KURTOSIS'] = str(kurtosis(read_lengths))
-        else:
-            stats_dict[no_prfx + 'READ_LENGTH_STD_DEV'] = 0
-            stats_dict[no_prfx + 'READ_LENGTH_VARIANCE'] = 0
-            stats_dict[no_prfx + 'READ_LENGTH_SKEW'] = 0
-            stats_dict[no_prfx + 'READ_LENGTH_KURTOSIS'] = 0
+        stats_dict[no_prfx + 'READ_LENGTH_STD_DEV'] = str(statistics.stdev(read_lengths))
+        stats_dict[no_prfx + 'READ_LENGTH_VARIANCE'] = str(statistics.variance(read_lengths))
+        stats_dict[no_prfx + 'READ_LENGTH_SKEW'] = str(skew(read_lengths))
+        stats_dict[no_prfx + 'READ_LENGTH_KURTOSIS'] = str(kurtosis(read_lengths))
+    else:
+        stats_dict[no_prfx + 'NUM_OF_READS'] = 0
+        stats_dict[no_prfx + 'READ_LENGTH_MEAN'] = 0
+        stats_dict[no_prfx + 'READ_LENGTH_MEDIAN'] = 0
+        stats_dict[no_prfx + 'READ_LENGTH_RANGE'] = 0
+
+        stats_dict[no_prfx + 'READ_LENGTH_STD_DEV'] = 0
+        stats_dict[no_prfx + 'READ_LENGTH_VARIANCE'] = 0
+        stats_dict[no_prfx + 'READ_LENGTH_SKEW'] = 0
+        stats_dict[no_prfx + 'READ_LENGTH_KURTOSIS'] = 0
 
     return stats_dict
