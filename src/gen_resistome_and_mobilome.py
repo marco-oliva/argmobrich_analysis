@@ -125,7 +125,7 @@ def long_reads_strategy_resistome(config):
 
     return AMR_mapped_regions_per_read
 
-def short_reads_stratedy_resistome(config):
+def short_reads_strategy_resistome(config):
     # Get megares gene for coverage
 
     AMR_mapped_regions_per_read = dict()
@@ -349,7 +349,7 @@ def long_reads_strategy_mobilome(config, AMR_mapped_regions_per_read):
         csv_writer = csv.writer(out_csv)
         csv_writer.writerows(csv_rows)
 
-def short_reads_stratedy_mobilome(config, AMR_mapped_regions_per_read):
+def short_reads_strategy_mobilome(config, AMR_mapped_regions_per_read):
     mge_genes = dict()
     mge_combined_reference_fasta_filename = config['DATABASE']['MGES']
     for rec in SeqIO.parse(mge_combined_reference_fasta_filename, "fasta"):
@@ -459,7 +459,7 @@ def main():
     strategy = config['MISC']['RESISTOME_STRATEGY']
     logger.info('Resistome strategy: {}'.format(strategy))
     if strategy == 'SHORT':
-        AMR_mapped_regions_per_read = short_reads_stratedy_resistome(config)
+        AMR_mapped_regions_per_read = short_reads_strategy_resistome(config)
     elif strategy == 'LONG':
         AMR_mapped_regions_per_read = long_reads_strategy_resistome(config)
     else:
@@ -469,7 +469,7 @@ def main():
     strategy = config['MISC']['MOBILOME_STRATEGY']
     logger.info('Mobilome strategy: {}'.format(strategy))
     if strategy == 'SHORT':
-        short_reads_stratedy_mobilome(config, AMR_mapped_regions_per_read)
+        short_reads_strategy_mobilome(config, AMR_mapped_regions_per_read)
     elif strategy == 'LONG':
         long_reads_strategy_mobilome(config, AMR_mapped_regions_per_read)
     else:
