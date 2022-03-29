@@ -12,7 +12,7 @@ import argparse
 import configparser
 import numpy as np
 
-from common import *
+from src.common import *
 
 # Hardcoded stuff
 base_path = '/home/marco/Downloads/Noyes_TELS_I/ZymoBIOMICS.STD.refseq.v2/Genomes'

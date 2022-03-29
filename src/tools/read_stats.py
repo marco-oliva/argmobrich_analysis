@@ -7,7 +7,7 @@ import json
 from scipy.stats import kurtosis
 from scipy.stats import skew
 import gzip
-from common import *
+from src.common import *
 
 def main():
     parser = argparse.ArgumentParser(description='Get reads statistics from reads file')
