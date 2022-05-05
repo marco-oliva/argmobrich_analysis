@@ -16,3 +16,6 @@
 *.xlsx
 __init__.py
 venv
+!Tests/test_1.fastq
+!Tests/test_2.fastq
+!Tests/test_3.fastq
