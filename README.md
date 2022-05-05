@@ -11,7 +11,6 @@ This repository contains the scripts used to perform the analysis descrived in t
 ```bash
 git clone https://github.com/marco-oliva/argmobrich_analysis.git
 cd argmobrich_analysis
-python3 -m venv venv && source venv/bin/activate
 pip install -r requirements.txt
 ```
 
