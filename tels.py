@@ -241,11 +241,6 @@ def main():
     config['SCRIPTS']['GEN_MOBILOME'] = os.path.join(config['SCRIPTS']['BASE_PATH'],config['SCRIPTS']['GEN_MOBILOME'])
     config['SCRIPTS']['GEN_RESISTOME_AND_MOBILOME'] = os.path.join(config['SCRIPTS']['BASE_PATH'], config['SCRIPTS']['GEN_RESISTOME_AND_MOBILOME'])
 
-    for script in config['SCRIPTS'].keys():
-        if not os.path.isfile(script):
-            root_logger.error("Couldn't find {}".format(script))
-            exit()
-
     config['INPUT'] = dict()
     config['INPUT']['INPUT_FILE_NAME_EXT'] = os.path.basename(args.input_path)
     config['INPUT']['INPUT_FILE_NAME_NO_EXT'] = os.path.splitext(config['INPUT']['INPUT_FILE_NAME_EXT'])[0]
