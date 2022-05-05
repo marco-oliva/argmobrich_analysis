@@ -242,7 +242,7 @@ def main():
     config['SCRIPTS']['GEN_RESISTOME_AND_MOBILOME'] = os.path.join(config['SCRIPTS']['BASE_PATH'], config['SCRIPTS']['GEN_RESISTOME_AND_MOBILOME'])
 
     for script in config['SCRIPTS'].keys():
-        if not os.path.isfile(args.config_path):
+        if not os.path.isfile(script):
             root_logger.error("Couldn't find {}".format(script))
             exit()
 
