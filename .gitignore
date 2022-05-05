@@ -15,6 +15,7 @@
 *.xls
 *.xlsx
 __init__.py
+src/__pycache__
 venv
 !Tests/test_1.fastq
 !Tests/test_2.fastq
