@@ -213,8 +213,20 @@ def main():
 
     root_logger = init_logger()
 
+    if not os.path.isfile(args.input_path):
+        root_logger.error("Input file does not exist")
+        exit()
+
+    if not os.path.isfile(args.config_path):
+        root_logger.error("Config file does not exist")
+        exit()
+
     config = configparser.ConfigParser()
     config.read(args.config_path)
+
+    if shutil.which(config['TOOLS']['ALIGNER']) is None:
+        root_logger.error("Couldn't find {} in path".format(config['TOOLS']['ALIGNER']))
+        exit()
 
     if config['SCRIPTS']['BASE_PATH'] == '':
         config['SCRIPTS']['BASE_PATH'] = os.path.dirname(os.path.abspath(__file__))
@@ -228,6 +240,11 @@ def main():
     config['SCRIPTS']['GEN_RESISTOME'] = os.path.join(config['SCRIPTS']['BASE_PATH'],config['SCRIPTS']['GEN_RESISTOME'])
     config['SCRIPTS']['GEN_MOBILOME'] = os.path.join(config['SCRIPTS']['BASE_PATH'],config['SCRIPTS']['GEN_MOBILOME'])
     config['SCRIPTS']['GEN_RESISTOME_AND_MOBILOME'] = os.path.join(config['SCRIPTS']['BASE_PATH'], config['SCRIPTS']['GEN_RESISTOME_AND_MOBILOME'])
+
+    for script in config['SCRIPTS'].keys():
+        if not os.path.isfile(args.config_path):
+            root_logger.error("Couldn't find {}".format(script))
+            exit()
 
     config['INPUT'] = dict()
     config['INPUT']['INPUT_FILE_NAME_EXT'] = os.path.basename(args.input_path)

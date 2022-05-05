@@ -2,6 +2,7 @@ import errno
 import logging
 import signal
 import sys
+import shutil
 import configparser
 import os
 import argparse
