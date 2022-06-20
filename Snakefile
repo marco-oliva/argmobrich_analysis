@@ -28,6 +28,30 @@ tools_dir = "tools"
 # Deduplication
 
 rule deduplicate_reads:
+    input:
+        sample_name = "{sample_name}.fastq"
+
+    params:
+        num_of_clusters = config["MISC"]["DEDUP_CLUSTERS"],
+        tmp_dir_clusters = tmp_dir,
+        find_duplicates_script = config["SCRIPTS"]["FIND_DUPLICATES"],
+        deduplicate_script = config["SCRIPTS"]["DEDUPLICATE"],
+        tmp_dir = tmp_dir,
+        work_dir = work_dir
+
+    threads: config["MISC"]["DEDUP_THREADS"]
+
+    output:
+        duplicates_csv = os.path.join(tmp_dir, "{sample_name}" + config["EXTENSION"]["DUPLICATES"]),
+        sample_name = os.path.join(work_dir, "{sample_name}" + config["EXTENSION"]["DEDUPLICATED"])
+
+    shell:
+        """
+        mkdir -p {params.tmp_dir} {params.work_dir}
+        python3 {params.find_duplicates_script} -r {input.sample_name} -o {params.tmp_dir_clusters} \
+            -n {params.num_of_clusters} -t {threads} > {output.duplicates_csv}
+        python3 {params.deduplicate_script} -r {input.sample_name} -d {output.duplicates_csv} > {output.sample_name}
+        """
 
 ############################################################
 # Alignment
