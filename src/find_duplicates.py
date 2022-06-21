@@ -8,8 +8,8 @@ from sklearn.cluster import KMeans
 
 from common import *
 
-def run_blat(input_file, out_pls_file):
-    blat_command = 'blat {fasta_name} {fasta_name} {psl_name}'.format(fasta_name=input_file,psl_name=out_pls_file)
+def run_blat(input_file, out_pls_file, blat_exe = "blat"):
+    blat_command = '{blat} {fasta_name} {fasta_name} {psl_name}'.format(blat=blat_exe,fasta_name=input_file,psl_name=out_pls_file)
     execute_command(blat_command)
     return out_pls_file
 
@@ -22,6 +22,7 @@ def main():
     parser.add_argument('-o', help='Output directory', type=str, dest='out_dir', required=True)
     parser.add_argument('-n', help='Number of clusters to generate', type=int, dest='num_clusters', default=200)
     parser.add_argument('-t', help='Number of threads', type=int, dest='num_threads', default=1)
+    parser.add_argument('-b', help='BLAT executable', type=str, dest='blat_exe', required=True)
     args = parser.parse_args()
 
     root_logger = init_logger()
@@ -71,7 +72,7 @@ def main():
         # here blat was called
         out_pls = output_dir + '/pls_files/' + str(i) + '.pls'
         fasta_filename = output_dir + '/' + os.path.splitext(os.path.basename(reads_file))[0] + '_' + str(i) + '.fasta.gz'
-        input_tuples.append((fasta_filename, out_pls))
+        input_tuples.append((fasta_filename, out_pls, args.blat_exe))
 
     with Pool(args.num_threads) as threads_pool:
         pls_files = threads_pool.starmap(run_blat, input_tuples)

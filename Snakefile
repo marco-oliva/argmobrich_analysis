@@ -7,6 +7,7 @@ import os
 ## Messages
 ############################################################
 
+
 ############################################################
 ## Config file and shorthands
 ############################################################
@@ -23,13 +24,13 @@ tools_dir = "tools"
 ## Pipeline Steps
 ############################################################
 
-
 ############################################################
 # Deduplication
 
 rule deduplicate_reads:
     input:
-        sample_name = "{sample_name}.fastq"
+        reads = "{sample_name}.fastq",
+        blat_sif = os.path.join(tools_dir, "blat_sif")
 
     params:
         num_of_clusters = config["MISC"]["DEDUP_CLUSTERS"],
@@ -42,23 +43,23 @@ rule deduplicate_reads:
     threads: config["MISC"]["DEDUP_THREADS"]
 
     output:
-        duplicates_csv = os.path.join(tmp_dir, "{sample_name}" + config["EXTENSION"]["DUPLICATES"]),
-        sample_name = os.path.join(work_dir, "{sample_name}" + config["EXTENSION"]["DEDUPLICATED"])
+        duplicates_csv = os.path.join(tmp_dir, "{sample_name}.fastq" + config["EXTENSION"]["DUPLICATES"]),
+        sample_name = os.path.join(work_dir, "{sample_name}.fastq" + config["EXTENSION"]["DEDUPLICATED"])
 
     shell:
         """
         mkdir -p {params.tmp_dir} {params.work_dir}
-        python3 {params.find_duplicates_script} -r {input.sample_name} -o {params.tmp_dir_clusters} \
-            -n {params.num_of_clusters} -t {threads} > {output.duplicates_csv}
-        python3 {params.deduplicate_script} -r {input.sample_name} -d {output.duplicates_csv} > {output.sample_name}
+        python3 {params.find_duplicates_script} -r {input.reads} -o {params.tmp_dir_clusters} \
+            -n {params.num_of_clusters} -t {threads} -b {input.blat_sif} > {output.duplicates_csv}
+        python3 {params.deduplicate_script} -r {input.reads} -d {output.duplicates_csv} > {output.sample_name}
         """
 
-############################################################
+############################################################s
 # Alignment
 
 rule align_to_megares:
     input:
-        sample_name = "{sample_name}.fastq",
+        reads = "{sample_name}.fastq",
         megares_v2_seqs = os.path.join(databases_dir,"/megares_full_database_v2.00.fasta"),
         minimap2_sif = os.path.join(tools_dir, "minimap2_sif")
 
@@ -68,18 +69,18 @@ rule align_to_megares:
                         + config["MINIMAP2"]["ALIGNER_HIFI_OPTION"]
 
     output:
-        megares_out_sam = os.path.join(work_dir, "{sample_name}" + config["EXTENSION"]["A_TO_MEGARES"])
+        megares_out_sam = os.path.join(work_dir, "{sample_name}.fastq" + config["EXTENSION"]["A_TO_MEGARES"])
 
     threads: config["MINIMAP2"]["THREADS"]
 
     shell:
         """
-        {input.minimap2_sif} -t {threads} {params.minimap_flags} {input.megares_v2_seqs} {input.sample_name} -o {output.megares_out_sam}
+        {input.minimap2_sif} -t {threads} {params.minimap_flags} {input.megares_v2_seqs} {input.reads} -o {output.megares_out_sam}
         """
 
 rule align_to_mges:
     input:
-        sample_name = "{sample_name}.fastq",
+        reads = "{sample_name}.fastq",
         mges_database = os.path.join(databases_dir,"mges_combined.fa"),
         minimap2_sif = os.path.join(tools_dir, "minimap2_sif")
 
@@ -89,18 +90,18 @@ rule align_to_mges:
                         + config["MINIMAP2"]["ALIGNER_HIFI_OPTION"]
 
     output:
-        mges_out_sam = os.path.join(work_dir, "{sample_name}" + config["EXTENSION"]["A_TO_MGES"])
+        mges_out_sam = os.path.join(work_dir, "{sample_name}.fastq" + config["EXTENSION"]["A_TO_MGES"])
 
     threads: config["MINIMAP2"]["THREADS"]
 
     shell:
         """
-        {input.minimap2_sif} -t {threads} {params.minimap_flags} {input.mges_database} {input.sample_name} -o {output.mges_out_sam}
+        {input.minimap2_sif} -t {threads} {params.minimap_flags} {input.mges_database} {input.reads} -o {output.mges_out_sam}
         """
 
 rule align_to_kegg:
     input:
-        sample_name = "{sample_name}.fastq",
+        reads = "{sample_name}.fastq",
         kegg_database = os.path.join(databases_dir,"kegg_genes.fa"),
         minimap2_sif = os.path.join(tools_dir, "minimap2_sif")
 
@@ -110,14 +111,46 @@ rule align_to_kegg:
                         + config["MINIMAP2"]["ALIGNER_HIFI_OPTION"]
 
     output:
-        kegg_out_sam = os.path.join(work_dir, "{sample_name}" + config["EXTENSION"]["A_TO_KEGG"])
+        kegg_out_sam = os.path.join(work_dir, "{sample_name}.fastq" + config["EXTENSION"]["A_TO_KEGG"])
 
     threads: config["MINIMAP2"]["THREADS"]
 
     shell:
         """
-        {input.minimap2_sif} -t {threads} {params.minimap_flags} {input.kegg_database} {input.sample_name} -o {output.kegg_out_sam}
+        {input.minimap2_sif} -t {threads} {params.minimap_flags} {input.kegg_database} {input.reads} -o {output.kegg_out_sam}
         """
+
+rule produce_config_file:
+    output:
+        out_config_file = os.path.join(work_dir, "config.ini")
+
+    run:
+        import configparser
+        with open(output.out_config_file,'w') as configfile_out:
+            config.write(configfile_out)
+
+rule resisome_and_mobilome:
+    input:
+        megares_sam = "{sample_name}.fastq" + config["EXTENSION"]["A_TO_MEGARES"],
+        mges_sam = "{sample_name}.fastq" + config["EXTENSION"]["A_TO_MGES"]
+
+    params:
+        resistome_mobilome_script = config["SCRIPTS"]["GEN_RESISTOME_AND_MOBILOME"]
+
+    output:
+        resistome_richness = os.path.join(work_dir,"{sample_name}.fastq_" + config["MISC"]["RESISTOME_STRATEGY"]
+                                                    + config["EXTENSION"]["RESISTOME_RICHNESS"]),
+        resistome_diversity = os.path.join(work_dir,"{sample_name}.fastq_" + config["MISC"]["RESISTOME_STRATEGY"]
+                                                    + config["EXTENSION"]["RESISTOME_DIVERSITY"]),
+        mobilome = os.path.join(work_dir,"{sample_name}.fastq_" + config["MISC"]["MOBILOME_STRATEGY"]
+                                                    + config["EXTENSION"]["MOBILOME"])
+
+    shell:
+        """
+        python3 {params.resistome_mobilome_script} \
+            -r {wildcards.sample_name}.fastq
+        """
+
 
 ############################################################
 ## Databases

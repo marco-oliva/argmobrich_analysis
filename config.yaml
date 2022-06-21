@@ -8,6 +8,9 @@ EXTENSION:
   A_TO_MEGARES : _ato_megaresv2.sam
   A_TO_MGES : _ato_MGES.sam
   A_TO_KEGG : _ato_KEGG.sam
+  RESISTOME_DIVERSITY : _amr_diversity.csv
+  RESISTOME_RICHNESS : _amr_richness.csv
+  MOBILOME : _mobilome.csv
   COLOCALIZATIONS : _colocalizations.csv
   COLOCALIZATIONS_RICHNESS : _colocalizations_richness.csv
   GENES_LIST : _genes_list.csv
