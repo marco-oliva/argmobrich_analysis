@@ -11,9 +11,9 @@ import os
 ## Config file and shorthands
 ############################################################
 
-configfile: "config.yaml"
+configfile: "config.json"
+workdir: config["WORKDIR"]
 
-work_dir = "workdir"
 databases_dir = "databases"
 tmp_dir = "tmp"
 tools_dir = "tools"
@@ -37,17 +37,16 @@ rule deduplicate_reads:
         find_duplicates_script = config["SCRIPTS"]["FIND_DUPLICATES"],
         deduplicate_script = config["SCRIPTS"]["DEDUPLICATE"],
         tmp_dir = tmp_dir,
-        work_dir = work_dir
 
     threads: config["MISC"]["DEDUP_THREADS"]
 
     output:
         duplicates_csv = os.path.join(tmp_dir, "{sample_name}.fastq" + config["EXTENSION"]["DUPLICATES"]),
-        sample_name = os.path.join(work_dir, "{sample_name}.fastq" + config["EXTENSION"]["DEDUPLICATED"])
+        sample_name = "{sample_name}.fastq" + config["EXTENSION"]["DEDUPLICATED"]
 
     shell:
         """
-        mkdir -p {params.tmp_dir} {params.work_dir}
+        mkdir -p {params.tmp_dir}
         python3 {params.find_duplicates_script} -r {input.reads} -o {params.tmp_dir_clusters} \
             -n {params.num_of_clusters} -t {threads} -b {input.blat_sif} > {output.duplicates_csv}
         python3 {params.deduplicate_script} -r {input.reads} -d {output.duplicates_csv} > {output.sample_name}
@@ -68,7 +67,7 @@ rule align_to_megares:
                         + config["MINIMAP2"]["ALIGNER_HIFI_OPTION"]
 
     output:
-        megares_out_sam = os.path.join(work_dir, "{sample_name}.fastq" + config["EXTENSION"]["A_TO_MEGARES"])
+        megares_out_sam = "{sample_name}.fastq" + config["EXTENSION"]["A_TO_MEGARES"]
 
     threads: config["MINIMAP2"]["THREADS"]
 
@@ -121,7 +120,7 @@ rule align_to_kegg:
 
 rule pass_config_file:
     output:
-        out_config_file = os.path.join(str(work_dir), "config.ini")
+        out_config_file = os.path.join(work_dir, "config.ini")
 
     run:
         import configparser
