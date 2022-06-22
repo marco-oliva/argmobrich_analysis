@@ -125,7 +125,9 @@ rule pass_config_file:
     run:
         import configparser
         with open(output.out_config_file,'w') as configfile_out:
-            config.write(configfile_out)
+            config_parser = configparser.ConfigParser()
+            config_parser.read_dict(config)
+            config_parser.write(configfile_out)
 
 rule resisome_and_mobilome:
     input:
