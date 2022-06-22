@@ -7,7 +7,6 @@ import os
 ## Messages
 ############################################################
 
-
 ############################################################
 ## Config file and shorthands
 ############################################################
@@ -120,7 +119,7 @@ rule align_to_kegg:
         {input.minimap2_sif} -t {threads} {params.minimap_flags} {input.kegg_database} {input.reads} -o {output.kegg_out_sam}
         """
 
-rule produce_config_file:
+rule pass_config_file:
     output:
         out_config_file = os.path.join(work_dir, "config.ini")
 
@@ -132,10 +131,12 @@ rule produce_config_file:
 rule resisome_and_mobilome:
     input:
         megares_sam = "{sample_name}.fastq" + config["EXTENSION"]["A_TO_MEGARES"],
-        mges_sam = "{sample_name}.fastq" + config["EXTENSION"]["A_TO_MGES"]
+        mges_sam = "{sample_name}.fastq" + config["EXTENSION"]["A_TO_MGES"],
+        config_file = os.path.join(work_dir,"config.ini")
 
     params:
-        resistome_mobilome_script = config["SCRIPTS"]["GEN_RESISTOME_AND_MOBILOME"]
+        resistome_mobilome_script = config["SCRIPTS"]["GEN_RESISTOME_AND_MOBILOME"],
+        output_prefix = os.path.join(work_dir,"{sample_name}.fastq_")
 
     output:
         resistome_richness = os.path.join(work_dir,"{sample_name}.fastq_" + config["MISC"]["RESISTOME_STRATEGY"]
@@ -148,7 +149,56 @@ rule resisome_and_mobilome:
     shell:
         """
         python3 {params.resistome_mobilome_script} \
-            -r {wildcards.sample_name}.fastq
+            -r {wildcards.sample_name}.fastq \
+            -a {input.megares_sam} \
+            -m {input.mges_sam} \
+            -c {input.config_file} \
+            -o {params.output_prefix}
+        """
+
+rule find_colocalizations:
+    input:
+        megares_sam = "{sample_name}.fastq" + config["EXTENSION"]["A_TO_MEGARES"],
+        mges_sam = "{sample_name}.fastq" + config["EXTENSION"]["A_TO_MGES"],
+        kegg_sam = "{sample_name}.fastq" + config["EXTENSION"]["A_TO_KEGG"],
+        config_file = os.path.join(work_dir,"config.ini")
+
+    params:
+        find_colocalizations_script = config["SCRIPTS"]["FIND_COLOCALIZATIONS"],
+        output_directory = work_dir
+
+    output:
+        colocalizations = os.path.join(work_dir,"{sample_name}.fastq_" + config["EXTENSION"]["COLOCALIZATIONS"])
+
+    shell:
+        """
+        python3 {params.find_colocalizations_script} \
+            -r {wildcards.sample_name}.fastq \
+            -a {input.megares_sam} \
+            -m {input.mges_sam} \
+            -k {input.kegg_sam} \
+            -c {input.config_file} \
+            -o {params.output_directory} \
+            > {output.colocalizations}
+        """
+
+rule colocalization_richness:
+    input:
+        colocalizations = os.path.join(work_dir,"{sample_name}.fastq_" + config["EXTENSION"]["COLOCALIZATIONS"]),
+        config_file = os.path.join(work_dir,"config.ini")
+
+    params:
+        find_colocalizations_script = config["SCRIPTS"]["COLOCALIZATIONS_RICHNESS"],
+
+    output:
+        colocalizations_richness = os.path.join(work_dir,"{sample_name}.fastq_" + config["EXTENSION"]["COLOCALIZATIONS"])
+
+    shell:
+        """
+        python3 {params.find_colocalizations_script} \
+            -i {input.colocalizations} \
+            -c {input.config_file} \
+            > {output.colocalizations_richness}
         """
 
 
