@@ -121,7 +121,7 @@ rule align_to_kegg:
 
 rule pass_config_file:
     output:
-        out_config_file = os.path.join(work_dir, "config.ini")
+        out_config_file = os.path.join(str(work_dir), "config.ini")
 
     run:
         import configparser
