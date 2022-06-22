@@ -126,6 +126,7 @@ rule pass_config_file:
         import configparser
         with open(output.out_config_file,'w') as configfile_out:
             config_parser = configparser.ConfigParser()
+            print(config)
             config_parser.read_dict(config)
             config_parser.write(configfile_out)
 
