@@ -88,7 +88,7 @@ rule align_to_mges:
                         + config["MINIMAP2"]["ALIGNER_HIFI_OPTION"]
 
     output:
-        mges_out_sam = os.path.join(work_dir, "{sample_name}.fastq" + config["EXTENSION"]["A_TO_MGES"])
+        mges_out_sam = "{sample_name}.fastq" + config["EXTENSION"]["A_TO_MGES"]
 
     threads: config["MINIMAP2"]["THREADS"]
 
@@ -109,7 +109,7 @@ rule align_to_kegg:
                         + config["MINIMAP2"]["ALIGNER_HIFI_OPTION"]
 
     output:
-        kegg_out_sam = os.path.join(work_dir, "{sample_name}.fastq" + config["EXTENSION"]["A_TO_KEGG"])
+        kegg_out_sam = "{sample_name}.fastq" + config["EXTENSION"]["A_TO_KEGG"]
 
     threads: config["MINIMAP2"]["THREADS"]
 
@@ -120,7 +120,7 @@ rule align_to_kegg:
 
 rule pass_config_file:
     output:
-        out_config_file = os.path.join(work_dir, "config.ini")
+        out_config_file = "config.ini"
 
     run:
         import configparser
@@ -131,19 +131,18 @@ rule resisome_and_mobilome:
     input:
         megares_sam = "{sample_name}.fastq" + config["EXTENSION"]["A_TO_MEGARES"],
         mges_sam = "{sample_name}.fastq" + config["EXTENSION"]["A_TO_MGES"],
-        config_file = os.path.join(work_dir,"config.ini")
+        config_file = "config.ini"
 
     params:
         resistome_mobilome_script = config["SCRIPTS"]["GEN_RESISTOME_AND_MOBILOME"],
-        output_prefix = os.path.join(work_dir,"{sample_name}.fastq_")
+        output_prefix = "{sample_name}.fastq_"
 
     output:
-        resistome_richness = os.path.join(work_dir,"{sample_name}.fastq_" + config["MISC"]["RESISTOME_STRATEGY"]
-                                                    + config["EXTENSION"]["RESISTOME_RICHNESS"]),
-        resistome_diversity = os.path.join(work_dir,"{sample_name}.fastq_" + config["MISC"]["RESISTOME_STRATEGY"]
-                                                    + config["EXTENSION"]["RESISTOME_DIVERSITY"]),
-        mobilome = os.path.join(work_dir,"{sample_name}.fastq_" + config["MISC"]["MOBILOME_STRATEGY"]
-                                                    + config["EXTENSION"]["MOBILOME"])
+        resistome_richness = "{sample_name}.fastq_" + config["MISC"]["RESISTOME_STRATEGY"]
+                                                    + config["EXTENSION"]["RESISTOME_RICHNESS"],
+        resistome_diversity = "{sample_name}.fastq_" + config["MISC"]["RESISTOME_STRATEGY"]
+                                                     + config["EXTENSION"]["RESISTOME_DIVERSITY"],
+        mobilome = "{sample_name}.fastq_" + config["MISC"]["MOBILOME_STRATEGY"] + config["EXTENSION"]["MOBILOME"]
 
     shell:
         """
@@ -160,14 +159,14 @@ rule find_colocalizations:
         megares_sam = "{sample_name}.fastq" + config["EXTENSION"]["A_TO_MEGARES"],
         mges_sam = "{sample_name}.fastq" + config["EXTENSION"]["A_TO_MGES"],
         kegg_sam = "{sample_name}.fastq" + config["EXTENSION"]["A_TO_KEGG"],
-        config_file = os.path.join(work_dir,"config.ini")
+        config_file = "config.ini"
 
     params:
         find_colocalizations_script = config["SCRIPTS"]["FIND_COLOCALIZATIONS"],
-        output_directory = work_dir
+        output_directory = os.getcwd()
 
     output:
-        colocalizations = os.path.join(work_dir,"{sample_name}.fastq_" + config["EXTENSION"]["COLOCALIZATIONS"])
+        colocalizations = "{sample_name}.fastq_" + config["EXTENSION"]["COLOCALIZATIONS"]
 
     shell:
         """
@@ -183,14 +182,14 @@ rule find_colocalizations:
 
 rule colocalization_richness:
     input:
-        colocalizations = os.path.join(work_dir,"{sample_name}.fastq_" + config["EXTENSION"]["COLOCALIZATIONS"]),
-        config_file = os.path.join(work_dir,"config.ini")
+        colocalizations = "{sample_name}.fastq_" + config["EXTENSION"]["COLOCALIZATIONS"],
+        config_file = "config.ini"
 
     params:
         find_colocalizations_script = config["SCRIPTS"]["COLOCALIZATIONS_RICHNESS"],
 
     output:
-        colocalizations_richness = os.path.join(work_dir,"{sample_name}.fastq_" + config["EXTENSION"]["COLOCALIZATIONS"])
+        colocalizations_richness = "{sample_name}.fastq_" + config["EXTENSION"]["COLOCALIZATIONS"]
 
     shell:
         """
@@ -294,12 +293,6 @@ rule clean_sam_files:
         rm -rf {work_dir}/*.sam
         """
 
-rule clean_work_dir:
-    shell:
-        """
-        rm -rf {work_dir}
-        """
-
 rule clean_tools:
     shell:
         """
@@ -309,6 +302,6 @@ rule clean_tools:
 rule clean_all:
     shell:
         """
-        rm -rf {work_dir} {databases_dir} {tmp_dir} {tools_dir}
+        rm -rf {databases_dir} {tmp_dir} {tools_dir}
         """
 
