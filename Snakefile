@@ -14,7 +14,7 @@ import os
 configfile: "config.json"
 workdir: config["WORKFLOW"]["WORKDIR"]
 
-samples_dir = config["WORKFLOW"]["SAMPLES"]
+samples_dir = config["WORKFLOW"]["DATA"]
 databases_dir = "databases"
 tmp_dir = "tmp"
 
