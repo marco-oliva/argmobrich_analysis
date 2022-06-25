@@ -1,7 +1,8 @@
 {
-  "SNAKEMAKE":
+  "WORKFLOW" :
   {
-    "WORKDIR": "./work_dir"
+    "WORKDIR": "./work_dir",
+    "DATA" : "./samples"
   },
 
   "DATABASE" :

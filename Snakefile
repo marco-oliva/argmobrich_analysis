@@ -12,8 +12,9 @@ import os
 ############################################################
 
 configfile: "config.json"
-workdir: config["SNAKEMAKE"]["WORKDIR"]
+workdir: config["WORKFLOW"]["WORKDIR"]
 
+samples_dir = config["WORKFLOW"]["SAMPLES"]
 databases_dir = "databases"
 tmp_dir = "tmp"
 
@@ -26,14 +27,14 @@ tmp_dir = "tmp"
 
 rule deduplicate_reads:
     input:
-        reads = "{sample_name}.fastq"
+        reads = os.path.join(samples_dir, "{sample_name}.fastq")
 
     params:
         num_of_clusters = config["MISC"]["DEDUP_CLUSTERS"],
         tmp_dir_clusters = tmp_dir,
         find_duplicates_script = config["SCRIPTS"]["FIND_DUPLICATES"],
         deduplicate_script = config["SCRIPTS"]["DEDUPLICATE"],
-        tmp_dir = tmp_dir,
+        tmp_dir = tmp_dir
 
     conda:
         "envs/deduplication.yaml"
@@ -60,7 +61,7 @@ rule deduplicate_reads:
 
 rule align_to_megares:
     input:
-        reads = "{sample_name}.fastq",
+        reads = os.path.join(samples_dir, "{sample_name}.fastq"),
         megares_v2_seqs = os.path.join(databases_dir,"/megares_full_database_v2.00.fasta")
 
     params:
@@ -86,7 +87,7 @@ rule align_to_megares:
 
 rule align_to_mges:
     input:
-        reads = "{sample_name}.fastq",
+        reads = os.path.join(samples_dir, "{sample_name}.fastq"),
         mges_database = os.path.join(databases_dir,"mges_combined.fa")
     params:
         minimap_flags = config["MINIMAP2"]["ALIGNER_PB_OPTION"] + " "
@@ -111,9 +112,8 @@ rule align_to_mges:
 
 rule align_to_kegg:
     input:
-        reads = "{sample_name}.fastq",
-        kegg_database = os.path.join(databases_dir,"kegg_genes.fa"),
-        minimap2_sif = os.path.join(tools_dir, "minimap2_sif")
+        reads = os.path.join(samples_dir, "{sample_name}.fastq"),
+        kegg_database = os.path.join(databases_dir,"kegg_genes.fa")
 
     params:
         minimap_flags = config["MINIMAP2"]["ALIGNER_PB_OPTION"] + " "
@@ -133,7 +133,7 @@ rule align_to_kegg:
 
     shell:
         """
-        {input.minimap2_sif} -t {threads} {params.minimap_flags} {input.kegg_database} {input.reads} -o {output.kegg_out_sam}
+        minimap2 -t {threads} {params.minimap_flags} {input.kegg_database} {input.reads} -o {output.kegg_out_sam}
         """
 
 rule pass_config_file:
