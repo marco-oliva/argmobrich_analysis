@@ -24,9 +24,6 @@ tmp_dir = "tmp"
 ############################################################
 # Deduplication
 
-def get_input_samples_fastqs(wildcards):
-    return config["samples"][wildcards.sample]
-
 rule deduplicate_reads:
     input:
         reads = "samples/{sample_name}.fastq"
