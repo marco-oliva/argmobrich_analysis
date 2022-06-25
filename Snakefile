@@ -12,7 +12,7 @@ import os
 ############################################################
 
 configfile: "config_test.json"
-workdir: config["WORKDIR"]
+workdir: config["SNAKEMAKE"]["WORKDIR"]
 
 databases_dir = "databases"
 tmp_dir = "tmp"
@@ -125,9 +125,8 @@ rule pass_config_file:
     run:
         import configparser
         with open(output.out_config_file,'w') as configfile_out:
+            print(config.items())
             config_parser = configparser.ConfigParser()
-            print(config)
-            print(type(config))
             config_parser.read_dict(config)
             config_parser.write(configfile_out)
 
@@ -210,15 +209,12 @@ rule colocalization_richness:
 
 rule get_megares_v2:
     output:
-        megares_v2_seqs = os.path.join(databases_dir,"/megares_full_database_v2.00.fasta"),
+        megares_v2_seqs = os.path.join(databases_dir,"megares_full_database_v2.00.fasta"),
         megares_v2_ontology = os.path.join(databases_dir,"megares_full_annotations_v2.00.csv")
-
-    params:
-        dbs_dir = databases_dir
 
     shell:
         """
-        mkdir -p {params.dbs_dir}
+        mkdir -p {databases_dir}
         wget http://megares.meglab.org/download/megares_v2.00/megares_full_database_v2.00.fasta -O {output.megares_v2_seqs}
         wget http://megares.meglab.org/download/megares_v2.00/megares_full_annotations_v2.00.csv -O {output.megares_v2_ontology}
         """
@@ -228,12 +224,11 @@ rule get_MGEs_DBs:
         mges_combined_db = os.path.join(databases_dir,"mges_combined.fa")
 
     params:
-        mges_path = config["DATABASE"]["MGES"],
-        dbs_dir = databases_dir
+        mges_path = config["DATABASE"]["MGES"]
 
     shell:
         """
-        mkdir -p {params.dbs_dir}
+        mkdir -p {databases_dir}
         cp {params.mges_path} {output.mges_combined_db}
         """
 
@@ -242,12 +237,11 @@ rule get_KEGG_Prokaryotes_DBs:
         kegg_prokaryotes_db = os.path.join(databases_dir,"kegg_genes.fa")
 
     params:
-        kegg_path = config["DATABASE"]["KEGG"],
-        dbs_dir = databases_dir
+        kegg_path = config["DATABASE"]["KEGG"]
 
     shell:
         """
-        mkdir -p {params.dbs_dir}
+        mkdir -p {databases_dir}
         cp {params.kegg_path} {output.kegg_prokaryotes_db}
         """
 
@@ -260,13 +254,12 @@ rule container_minimap2:
         sif = os.path.join(tools_dir,"minimap2_sif")
 
     params:
-        container_link = config["CONTAINERS"]["MINIMAP2"],
-        tls_dir = tools_dir
+        container_link = config["CONTAINERS"]["MINIMAP2"]
 
     shell:
         """
         module load singularity
-        mkdir -p {params.tls_dir}
+        mkdir -p {tools_dir}
         singularity pull {output.sif} docker://{params.container_link}
         """
 
@@ -276,13 +269,12 @@ rule container_blat:
         sif = os.path.join(tools_dir,"blat_sif")
 
     params:
-        container_link = config["CONTAINERS"]["BLAT"],
-        tls_dir = tools_dir
+        container_link = config["CONTAINERS"]["BLAT"]
 
     shell:
         """
         module load singularity
-        mkdir -p {params.tls_dir}
+        mkdir -p {tools_dir}
         singularity pull {output.sif} docker://{params.container_link}
         """
 
@@ -291,21 +283,21 @@ rule container_blat:
 ## Cleans
 ############################################################
 
+rule clean:
+    shell:
+        """
+        rm -rf {databases_dir} {tmp_dir} {tools_dir}
+        """
+
 rule clean_sam_files:
     shell:
         """
-        rm -rf {work_dir}/*.sam
+        rm -rf *.sam
         """
 
 rule clean_tools:
     shell:
         """
         rm -rf {tools_dir}
-        """
-
-rule clean_all:
-    shell:
-        """
-        rm -rf {databases_dir} {tmp_dir} {tools_dir}
         """
 
