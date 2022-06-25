@@ -11,7 +11,7 @@ import os
 ## Config file and shorthands
 ############################################################
 
-configfile: "config_test.json"
+configfile: "config.json"
 workdir: config["SNAKEMAKE"]["WORKDIR"]
 
 databases_dir = "databases"
