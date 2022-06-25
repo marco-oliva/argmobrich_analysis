@@ -1,0 +1,6 @@
+name: plots
+channels:
+  - bioconda
+dependencies:
+  - python=3.8
+  - blat

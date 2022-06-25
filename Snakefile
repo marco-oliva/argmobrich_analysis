@@ -16,8 +16,6 @@ workdir: config["SNAKEMAKE"]["WORKDIR"]
 
 databases_dir = "databases"
 tmp_dir = "tmp"
-tools_dir = "tools"
-
 
 ############################################################
 ## Pipeline Steps
@@ -28,8 +26,7 @@ tools_dir = "tools"
 
 rule deduplicate_reads:
     input:
-        reads = "{sample_name}.fastq",
-        blat_sif = os.path.join(tools_dir, "blat_sif")
+        reads = "{sample_name}.fastq"
 
     params:
         num_of_clusters = config["MISC"]["DEDUP_CLUSTERS"],
@@ -37,6 +34,12 @@ rule deduplicate_reads:
         find_duplicates_script = config["SCRIPTS"]["FIND_DUPLICATES"],
         deduplicate_script = config["SCRIPTS"]["DEDUPLICATE"],
         tmp_dir = tmp_dir,
+
+    conda:
+        "envs/deduplication.yaml"
+    envmodules:
+        "python/3.8",
+        "blat/20140318"
 
     threads: config["MISC"]["DEDUP_THREADS"]
 
@@ -48,7 +51,7 @@ rule deduplicate_reads:
         """
         mkdir -p {params.tmp_dir}
         python3 {params.find_duplicates_script} -r {input.reads} -o {params.tmp_dir_clusters} \
-            -n {params.num_of_clusters} -t {threads} -b {input.blat_sif} > {output.duplicates_csv}
+            -n {params.num_of_clusters} -t {threads} -b blat > {output.duplicates_csv}
         python3 {params.deduplicate_script} -r {input.reads} -d {output.duplicates_csv} > {output.sample_name}
         """
 
@@ -58,43 +61,52 @@ rule deduplicate_reads:
 rule align_to_megares:
     input:
         reads = "{sample_name}.fastq",
-        megares_v2_seqs = os.path.join(databases_dir,"/megares_full_database_v2.00.fasta"),
-        minimap2_sif = os.path.join(tools_dir, "minimap2_sif")
+        megares_v2_seqs = os.path.join(databases_dir,"/megares_full_database_v2.00.fasta")
 
     params:
         minimap_flags = config["MINIMAP2"]["ALIGNER_PB_OPTION"] + " "
                         + config["MINIMAP2"]["ALIGNER_ONT_OPTION"] + " "
                         + config["MINIMAP2"]["ALIGNER_HIFI_OPTION"]
 
-    output:
-        megares_out_sam = "{sample_name}.fastq" + config["EXTENSION"]["A_TO_MEGARES"]
+    conda:
+        "envs/alignment.yaml"
+    envmodules:
+        "python/3.8",
+        "minimap/2.21"
 
     threads: config["MINIMAP2"]["THREADS"]
 
+    output:
+        megares_out_sam = "{sample_name}.fastq" + config["EXTENSION"]["A_TO_MEGARES"]
+
     shell:
         """
-        {input.minimap2_sif} -t {threads} {params.minimap_flags} {input.megares_v2_seqs} {input.reads} -o {output.megares_out_sam}
+        minimap2 -t {threads} {params.minimap_flags} {input.megares_v2_seqs} {input.reads} -o {output.megares_out_sam}
         """
 
 rule align_to_mges:
     input:
         reads = "{sample_name}.fastq",
-        mges_database = os.path.join(databases_dir,"mges_combined.fa"),
-        minimap2_sif = os.path.join(tools_dir, "minimap2_sif")
-
+        mges_database = os.path.join(databases_dir,"mges_combined.fa")
     params:
         minimap_flags = config["MINIMAP2"]["ALIGNER_PB_OPTION"] + " "
                         + config["MINIMAP2"]["ALIGNER_ONT_OPTION"] + " "
                         + config["MINIMAP2"]["ALIGNER_HIFI_OPTION"]
 
-    output:
-        mges_out_sam = "{sample_name}.fastq" + config["EXTENSION"]["A_TO_MGES"]
+    conda:
+        "envs/alignment.yaml"
+    envmodules:
+        "python/3.8",
+        "minimap/2.21"
 
     threads: config["MINIMAP2"]["THREADS"]
 
+    output:
+        mges_out_sam = "{sample_name}.fastq" + config["EXTENSION"]["A_TO_MGES"]
+
     shell:
         """
-        {input.minimap2_sif} -t {threads} {params.minimap_flags} {input.mges_database} {input.reads} -o {output.mges_out_sam}
+        minimap2 -t {threads} {params.minimap_flags} {input.mges_database} {input.reads} -o {output.mges_out_sam}
         """
 
 rule align_to_kegg:
@@ -108,10 +120,16 @@ rule align_to_kegg:
                         + config["MINIMAP2"]["ALIGNER_ONT_OPTION"] + " "
                         + config["MINIMAP2"]["ALIGNER_HIFI_OPTION"]
 
-    output:
-        kegg_out_sam = "{sample_name}.fastq" + config["EXTENSION"]["A_TO_KEGG"]
+    conda:
+        "envs/alignment.yaml"
+    envmodules:
+        "python/3.8",
+        "minimap/2.21"
 
     threads: config["MINIMAP2"]["THREADS"]
+
+    output:
+        kegg_out_sam = "{sample_name}.fastq" + config["EXTENSION"]["A_TO_KEGG"]
 
     shell:
         """
@@ -139,6 +157,11 @@ rule resisome_and_mobilome:
     params:
         resistome_mobilome_script = config["SCRIPTS"]["GEN_RESISTOME_AND_MOBILOME"],
         output_prefix = "{sample_name}.fastq_"
+
+    conda:
+        "envs/pipeline.yaml"
+    envmodules:
+        "python/3.8"
 
     output:
         resistome_richness = "{sample_name}.fastq_" + config["MISC"]["RESISTOME_STRATEGY"]
@@ -168,6 +191,11 @@ rule find_colocalizations:
         find_colocalizations_script = config["SCRIPTS"]["FIND_COLOCALIZATIONS"],
         output_directory = os.getcwd()
 
+    conda:
+        "envs/pipeline.yaml"
+    envmodules:
+        "python/3.8"
+
     output:
         colocalizations = "{sample_name}.fastq_" + config["EXTENSION"]["COLOCALIZATIONS"]
 
@@ -189,7 +217,12 @@ rule colocalization_richness:
         config_file = "config.ini"
 
     params:
-        find_colocalizations_script = config["SCRIPTS"]["COLOCALIZATIONS_RICHNESS"],
+        find_colocalizations_script = config["SCRIPTS"]["COLOCALIZATIONS_RICHNESS"]
+
+    conda:
+        "envs/pipeline.yaml"
+    envmodules:
+        "python/3.8"
 
     output:
         colocalizations_richness = "{sample_name}.fastq_" + config["EXTENSION"]["COLOCALIZATIONS"]
@@ -246,47 +279,13 @@ rule get_KEGG_Prokaryotes_DBs:
         """
 
 ############################################################
-## Tools
-############################################################
-
-rule container_minimap2:
-    output:
-        sif = os.path.join(tools_dir,"minimap2_sif")
-
-    params:
-        container_link = config["CONTAINERS"]["MINIMAP2"]
-
-    shell:
-        """
-        module load singularity
-        mkdir -p {tools_dir}
-        singularity pull {output.sif} docker://{params.container_link}
-        """
-
-
-rule container_blat:
-    output:
-        sif = os.path.join(tools_dir,"blat_sif")
-
-    params:
-        container_link = config["CONTAINERS"]["BLAT"]
-
-    shell:
-        """
-        module load singularity
-        mkdir -p {tools_dir}
-        singularity pull {output.sif} docker://{params.container_link}
-        """
-
-
-############################################################
 ## Cleans
 ############################################################
 
 rule clean:
     shell:
         """
-        rm -rf {databases_dir} {tmp_dir} {tools_dir}
+        rm -rf {databases_dir} {tmp_dir}
         """
 
 rule clean_sam_files:
@@ -294,10 +293,3 @@ rule clean_sam_files:
         """
         rm -rf *.sam
         """
-
-rule clean_tools:
-    shell:
-        """
-        rm -rf {tools_dir}
-        """
-

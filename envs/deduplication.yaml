@@ -1,0 +1,6 @@
+name: deduplication
+channels:
+  - bioconda
+dependencies:
+  - python=3.8
+  - blat

@@ -1,0 +1,6 @@
+name: alignment
+channels:
+  - bioconda
+dependencies:
+  - python=3.8
+  - minimap2
