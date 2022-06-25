@@ -31,7 +31,7 @@ rule deduplicate_reads:
     params:
         num_of_clusters = config["MISC"]["DEDUP_CLUSTERS"],
         tmp_dir_clusters = tmp_dir,
-        find_duplicates_script = config["SCRIPTS"]["FIND_DUPLICATES"],
+        find_duplicates_script = os.path.join(workflow.basedir, config["SCRIPTS"]["FIND_DUPLICATES"]),
         deduplicate_script = config["SCRIPTS"]["DEDUPLICATE"],
         tmp_dir = tmp_dir
 
