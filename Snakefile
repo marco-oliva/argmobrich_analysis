@@ -32,7 +32,7 @@ rule deduplicate_reads:
         num_of_clusters = config["MISC"]["DEDUP_CLUSTERS"],
         tmp_dir_clusters = tmp_dir,
         find_duplicates_script = os.path.join(workflow.basedir, config["SCRIPTS"]["FIND_DUPLICATES"]),
-        deduplicate_script = config["SCRIPTS"]["DEDUPLICATE"],
+        deduplicate_script = os.path.join(workflow.basedir, config["SCRIPTS"]["DEDUPLICATE"]),
         tmp_dir = tmp_dir
 
     conda:
@@ -154,7 +154,7 @@ rule resisome_and_mobilome:
         config_file = "config.ini"
 
     params:
-        resistome_mobilome_script = config["SCRIPTS"]["GEN_RESISTOME_AND_MOBILOME"],
+        resistome_mobilome_script = os.path.join(workflow.basedir, config["SCRIPTS"]["GEN_RESISTOME_AND_MOBILOME"]),
         output_prefix = "{sample_name}.fastq_"
 
     conda:
@@ -187,7 +187,7 @@ rule find_colocalizations:
         config_file = "config.ini"
 
     params:
-        find_colocalizations_script = config["SCRIPTS"]["FIND_COLOCALIZATIONS"],
+        find_colocalizations_script = os.path.join(workflow.basedir, config["SCRIPTS"]["FIND_COLOCALIZATIONS"]),
         output_directory = os.getcwd()
 
     conda:
@@ -216,7 +216,7 @@ rule colocalization_richness:
         config_file = "config.ini"
 
     params:
-        find_colocalizations_script = config["SCRIPTS"]["COLOCALIZATIONS_RICHNESS"]
+        find_colocalizations_script = os.path.join(workflow.basedir, config["SCRIPTS"]["COLOCALIZATIONS_RICHNESS"])
 
     conda:
         "envs/pipeline.yaml"
