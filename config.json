@@ -1,8 +1,7 @@
 {
   "WORKFLOW" :
   {
-    "WORKDIR": "./work_dir",
-    "DATA" : "./samples"
+    "WORKDIR": "./work_dir"
   },
 
   "DATABASE" :

@@ -14,7 +14,6 @@ import os
 configfile: "config.json"
 workdir: config["WORKFLOW"]["WORKDIR"]
 
-samples_dir = config["WORKFLOW"]["DATA"]
 databases_dir = "databases"
 tmp_dir = "tmp"
 
@@ -25,9 +24,12 @@ tmp_dir = "tmp"
 ############################################################
 # Deduplication
 
+def get_input_samples_fastqs(wildcards):
+    return config["samples"][wildcards.sample]
+
 rule deduplicate_reads:
     input:
-        reads = os.path.join(samples_dir, "{sample_name}.fastq")
+        reads = "samples/{sample_name}.fastq"
 
     params:
         num_of_clusters = config["MISC"]["DEDUP_CLUSTERS"],
@@ -61,7 +63,7 @@ rule deduplicate_reads:
 
 rule align_to_megares:
     input:
-        reads = os.path.join(samples_dir, "{sample_name}.fastq"),
+        reads = "samples/{sample_name}.fastq",
         megares_v2_seqs = os.path.join(databases_dir,"/megares_full_database_v2.00.fasta")
 
     params:
@@ -87,7 +89,7 @@ rule align_to_megares:
 
 rule align_to_mges:
     input:
-        reads = os.path.join(samples_dir, "{sample_name}.fastq"),
+        reads = "samples/{sample_name}.fastq",
         mges_database = os.path.join(databases_dir,"mges_combined.fa")
     params:
         minimap_flags = config["MINIMAP2"]["ALIGNER_PB_OPTION"] + " "
@@ -112,7 +114,7 @@ rule align_to_mges:
 
 rule align_to_kegg:
     input:
-        reads = os.path.join(samples_dir, "{sample_name}.fastq"),
+        reads = "samples/{sample_name}.fastq",
         kegg_database = os.path.join(databases_dir,"kegg_genes.fa")
 
     params:
