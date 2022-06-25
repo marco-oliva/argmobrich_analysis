@@ -11,7 +11,7 @@ import os
 ## Config file and shorthands
 ############################################################
 
-configfile: "config.json"
+configfile: "config_test.json"
 workdir: config["WORKDIR"]
 
 databases_dir = "databases"
