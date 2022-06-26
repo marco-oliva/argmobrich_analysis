@@ -18,6 +18,12 @@ databases_dir = "databases"
 tmp_dir = "tmp"
 
 ############################################################
+## All rule
+############################################################
+
+
+
+############################################################
 ## Pipeline Steps
 ############################################################
 
@@ -33,6 +39,7 @@ rule deduplicate_reads:
         tmp_dir_clusters = tmp_dir,
         find_duplicates_script = os.path.join(workflow.basedir, config["SCRIPTS"]["FIND_DUPLICATES"]),
         deduplicate_script = os.path.join(workflow.basedir, config["SCRIPTS"]["DEDUPLICATE"]),
+        read_lengths_script = os.path.join(workflow.basedir, config["SCRIPTS"]["READS_LENGTHS"]),
         tmp_dir = tmp_dir
 
     conda:
@@ -45,7 +52,9 @@ rule deduplicate_reads:
 
     output:
         duplicates_csv = os.path.join(tmp_dir, "{sample_name}.fastq" + config["EXTENSION"]["DUPLICATES"]),
-        sample_name = "{sample_name}.fastq" + config["EXTENSION"]["DEDUPLICATED"]
+        sample_name = "{sample_name}.fastq" + config["EXTENSION"]["DEDUPLICATED"],
+        reads_lenght = "{sample_name}.fastq" + config["EXTENSION"]["READS_LENGTH"],
+        dedup_reads_lenght = "{sample_name}.fastq" + config["EXTENSION"]["DEDUPLICATED"] + config["EXTENSION"]["READS_LENGTH"]
 
     shell:
         """
@@ -53,6 +62,8 @@ rule deduplicate_reads:
         python3 {params.find_duplicates_script} -r {input.reads} -o {params.tmp_dir_clusters} \
             -n {params.num_of_clusters} -t {threads} -b blat > {output.duplicates_csv}
         python3 {params.deduplicate_script} -r {input.reads} -d {output.duplicates_csv} > {output.sample_name}
+        python3 {params.read_lengths_script} {input.reads} > {output.reads_lenght}
+        python3 {params.read_lengths_script} {output.sample_name} > {output.dedup_reads_lenght}
         """
 
 ############################################################s
@@ -60,8 +71,8 @@ rule deduplicate_reads:
 
 rule align_to_megares:
     input:
-        reads = "samples/{sample_name}.fastq",
-        megares_v2_seqs = os.path.join(databases_dir,"/megares_full_database_v2.00.fasta")
+        reads = "{sample_name}.fastq" + config["EXTENSION"]["DEDUPLICATED"],
+        megares_v2_seqs = os.path.join(databases_dir,"megares_full_database_v2.00.fasta")
 
     params:
         minimap_flags = config["MINIMAP2"]["ALIGNER_PB_OPTION"] + " "
@@ -77,7 +88,7 @@ rule align_to_megares:
     threads: config["MINIMAP2"]["THREADS"]
 
     output:
-        megares_out_sam = "{sample_name}.fastq" + config["EXTENSION"]["A_TO_MEGARES"]
+        megares_out_sam = "{sample_name}.fastq" + config["EXTENSION"]["DEDUPLICATED"] + config["EXTENSION"]["A_TO_MEGARES"]
 
     shell:
         """
@@ -86,8 +97,8 @@ rule align_to_megares:
 
 rule align_to_mges:
     input:
-        reads = "samples/{sample_name}.fastq",
-        mges_database = os.path.join(databases_dir,"mges_combined.fa")
+        reads = "{sample_name}.fastq" + config["EXTENSION"]["DEDUPLICATED"],
+        mges_database = os.path.join(databases_dir, "mges_combined.fa")
     params:
         minimap_flags = config["MINIMAP2"]["ALIGNER_PB_OPTION"] + " "
                         + config["MINIMAP2"]["ALIGNER_ONT_OPTION"] + " "
@@ -102,7 +113,7 @@ rule align_to_mges:
     threads: config["MINIMAP2"]["THREADS"]
 
     output:
-        mges_out_sam = "{sample_name}.fastq" + config["EXTENSION"]["A_TO_MGES"]
+        mges_out_sam = "{sample_name}.fastq" + config["EXTENSION"]["DEDUPLICATED"] + config["EXTENSION"]["A_TO_MGES"]
 
     shell:
         """
@@ -111,8 +122,8 @@ rule align_to_mges:
 
 rule align_to_kegg:
     input:
-        reads = "samples/{sample_name}.fastq",
-        kegg_database = os.path.join(databases_dir,"kegg_genes.fa")
+        reads = "{sample_name}.fastq" + config["EXTENSION"]["DEDUPLICATED"],
+        kegg_database = os.path.join(databases_dir, "kegg_genes.fa")
 
     params:
         minimap_flags = config["MINIMAP2"]["ALIGNER_PB_OPTION"] + " "
@@ -128,7 +139,7 @@ rule align_to_kegg:
     threads: config["MINIMAP2"]["THREADS"]
 
     output:
-        kegg_out_sam = "{sample_name}.fastq" + config["EXTENSION"]["A_TO_KEGG"]
+        kegg_out_sam = "{sample_name}.fastq" + config["EXTENSION"]["DEDUPLICATED"] + config["EXTENSION"]["A_TO_KEGG"]
 
     shell:
         """
@@ -142,20 +153,24 @@ rule pass_config_file:
     run:
         import configparser
         with open(output.out_config_file,'w') as configfile_out:
-            print(config.items())
+            config_to_pass = dict(config)
+            config_to_pass["DATABASE"]["MEGARES"] = os.path.join(databases_dir,"megares_full_database_v2.00.fasta")
+            config_to_pass["DATABASE"]["MEGARES_ONTOLOGY"] = os.path.join(databases_dir,"megares_full_annotations_v2.00.csv")
             config_parser = configparser.ConfigParser()
-            config_parser.read_dict(config)
+            config_parser.read_dict(config_to_pass)
             config_parser.write(configfile_out)
 
 rule resisome_and_mobilome:
     input:
-        megares_sam = "{sample_name}.fastq" + config["EXTENSION"]["A_TO_MEGARES"],
-        mges_sam = "{sample_name}.fastq" + config["EXTENSION"]["A_TO_MGES"],
+        megares_sam = "{sample_name}.fastq" + config["EXTENSION"]["DEDUPLICATED"] + config["EXTENSION"]["A_TO_MEGARES"],
+        mges_sam = "{sample_name}.fastq" + config["EXTENSION"]["DEDUPLICATED"] + config["EXTENSION"]["A_TO_MGES"],
+        reads_lenght = "{sample_name}.fastq" + config["EXTENSION"]["READS_LENGTH"],
+        dedup_reads_lenght = "{sample_name}.fastq" + config["EXTENSION"]["DEDUPLICATED"] + config["EXTENSION"]["READS_LENGTH"],
         config_file = "config.ini"
 
     params:
         resistome_mobilome_script = os.path.join(workflow.basedir, config["SCRIPTS"]["GEN_RESISTOME_AND_MOBILOME"]),
-        output_prefix = "{sample_name}.fastq_"
+        output_prefix = "{sample_name}.fastq" + config["EXTENSION"]["DEDUPLICATED"]
 
     conda:
         "envs/pipeline.yaml"
@@ -163,11 +178,11 @@ rule resisome_and_mobilome:
         "python/3.8"
 
     output:
-        resistome_richness = "{sample_name}.fastq_" + config["MISC"]["RESISTOME_STRATEGY"]
+        resistome_richness = "{sample_name}.fastq" + config["EXTENSION"]["DEDUPLICATED"] + "_" + config["MISC"]["RESISTOME_STRATEGY"]
                                                     + config["EXTENSION"]["RESISTOME_RICHNESS"],
-        resistome_diversity = "{sample_name}.fastq_" + config["MISC"]["RESISTOME_STRATEGY"]
+        resistome_diversity = "{sample_name}.fastq" + config["EXTENSION"]["DEDUPLICATED"] + "_" + config["MISC"]["RESISTOME_STRATEGY"]
                                                      + config["EXTENSION"]["RESISTOME_DIVERSITY"],
-        mobilome = "{sample_name}.fastq_" + config["MISC"]["MOBILOME_STRATEGY"] + config["EXTENSION"]["MOBILOME"]
+        mobilome = "{sample_name}.fastq" + config["EXTENSION"]["DEDUPLICATED"] + "_" + config["MISC"]["MOBILOME_STRATEGY"] + config["EXTENSION"]["MOBILOME"]
 
     shell:
         """
@@ -181,9 +196,11 @@ rule resisome_and_mobilome:
 
 rule find_colocalizations:
     input:
-        megares_sam = "{sample_name}.fastq" + config["EXTENSION"]["A_TO_MEGARES"],
-        mges_sam = "{sample_name}.fastq" + config["EXTENSION"]["A_TO_MGES"],
-        kegg_sam = "{sample_name}.fastq" + config["EXTENSION"]["A_TO_KEGG"],
+        megares_sam = "{sample_name}.fastq" + config["EXTENSION"]["DEDUPLICATED"] + config["EXTENSION"]["A_TO_MEGARES"],
+        mges_sam = "{sample_name}.fastq" + config["EXTENSION"]["DEDUPLICATED"] + config["EXTENSION"]["A_TO_MGES"],
+        kegg_sam = "{sample_name}.fastq" + config["EXTENSION"]["DEDUPLICATED"] + config["EXTENSION"]["A_TO_KEGG"],
+        reads_lenght = "{sample_name}.fastq" + config["EXTENSION"]["READS_LENGTH"],
+        dedup_reads_lenght = "{sample_name}.fastq" + config["EXTENSION"]["DEDUPLICATED"] + config["EXTENSION"]["READS_LENGTH"],
         config_file = "config.ini"
 
     params:
@@ -196,7 +213,7 @@ rule find_colocalizations:
         "python/3.8"
 
     output:
-        colocalizations = "{sample_name}.fastq_" + config["EXTENSION"]["COLOCALIZATIONS"]
+        colocalizations = "{sample_name}.fastq" + config["EXTENSION"]["DEDUPLICATED"] + config["EXTENSION"]["COLOCALIZATIONS"]
 
     shell:
         """
@@ -212,7 +229,7 @@ rule find_colocalizations:
 
 rule colocalization_richness:
     input:
-        colocalizations = "{sample_name}.fastq_" + config["EXTENSION"]["COLOCALIZATIONS"],
+        colocalizations = "{sample_name}.fastq" + config["EXTENSION"]["DEDUPLICATED"] + config["EXTENSION"]["COLOCALIZATIONS"],
         config_file = "config.ini"
 
     params:
@@ -224,7 +241,7 @@ rule colocalization_richness:
         "python/3.8"
 
     output:
-        colocalizations_richness = "{sample_name}.fastq_" + config["EXTENSION"]["COLOCALIZATIONS"]
+        colocalizations_richness = "{sample_name}.fastq" + config["EXTENSION"]["DEDUPLICATED"] + config["EXTENSION"]["COLOCALIZATIONS_RICHNESS"]
 
     shell:
         """
@@ -284,7 +301,7 @@ rule get_KEGG_Prokaryotes_DBs:
 rule clean:
     shell:
         """
-        rm -rf {databases_dir} {tmp_dir}
+        rm -rf {databases_dir} {tmp_dir} 
         """
 
 rule clean_sam_files:
