@@ -21,7 +21,17 @@ tmp_dir = "tmp"
 ## All rule
 ############################################################
 
+SAMPLES, = glob_wildcards("samples/{sample_name}.fastq")
+EXTS = [
+    config["EXTENSION"]["DEDUPLICATED"] + config["EXTENSION"]["COLOCALIZATIONS"],
+    config["EXTENSION"]["DEDUPLICATED"] + config["EXTENSION"]["COLOCALIZATIONS_RICHNESS"],
+    config["EXTENSION"]["DEDUPLICATED"] + "_" + config["MISC"]["RESISTOME_STRATEGY"] + config["EXTENSION"]["RESISTOME_RICHNESS"],
+    config["EXTENSION"]["DEDUPLICATED"] + "_" + config["MISC"]["RESISTOME_STRATEGY"] + config["EXTENSION"]["RESISTOME_DIVERSITY"],
+    config["EXTENSION"]["DEDUPLICATED"] + "_" + config["MISC"]["MOBILOME_STRATEGY"] + config["EXTENSION"]["MOBILOME"]]
 
+rule all:
+    input:
+        expand("{sample_name}.fastq{ext}", sample_name=SAMPLES, ext=EXTS)
 
 ############################################################
 ## Pipeline Steps
@@ -196,6 +206,7 @@ rule resisome_and_mobilome:
 
 rule find_colocalizations:
     input:
+        reads = "{sample_name}.fastq" + config["EXTENSION"]["DEDUPLICATED"],
         megares_sam = "{sample_name}.fastq" + config["EXTENSION"]["DEDUPLICATED"] + config["EXTENSION"]["A_TO_MEGARES"],
         mges_sam = "{sample_name}.fastq" + config["EXTENSION"]["DEDUPLICATED"] + config["EXTENSION"]["A_TO_MGES"],
         kegg_sam = "{sample_name}.fastq" + config["EXTENSION"]["DEDUPLICATED"] + config["EXTENSION"]["A_TO_KEGG"],
@@ -218,9 +229,9 @@ rule find_colocalizations:
     shell:
         """
         python3 {params.find_colocalizations_script} \
-            -r {wildcards.sample_name}.fastq \
-            -a {input.megares_sam} \
-            -m {input.mges_sam} \
+            -r {input.reads} \
+            --arg {input.megares_sam} \
+            --mge {input.mges_sam} \
             -k {input.kegg_sam} \
             -c {input.config_file} \
             -o {params.output_directory} \
