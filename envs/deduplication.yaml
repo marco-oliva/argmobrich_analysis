@@ -1,8 +1,11 @@
 name: deduplication
 channels:
+  - conda-forge
   - bioconda
+  - anaconda
 dependencies:
-  - python=3.8
+  - biopython
+  - python=3.7
   - blat
   - scipy
   - scikit-learn

@@ -29,9 +29,16 @@ EXTS = [
     config["EXTENSION"]["DEDUPLICATED"] + "_" + config["MISC"]["RESISTOME_STRATEGY"] + config["EXTENSION"]["RESISTOME_DIVERSITY"],
     config["EXTENSION"]["DEDUPLICATED"] + "_" + config["MISC"]["MOBILOME_STRATEGY"] + config["EXTENSION"]["MOBILOME"]]
 
+PLOT_EXTS = [
+    "_deduplicated_read_lengts_hist.pdf"
+]
+
 rule all:
     input:
-        expand("{sample_name}.fastq{ext}", sample_name=SAMPLES, ext=EXTS)
+        # Data
+        expand("{sample_name}.fastq{ext}", sample_name=SAMPLES, ext=EXTS),
+        # Plots
+        expand("{sample_name}{ext}", sample_name=SAMPLES, ext=PLOT_EXTS)
 
 ############################################################
 ## Pipeline Steps
@@ -267,6 +274,44 @@ rule colocalization_richness:
 ## Plots
 ############################################################
 
+rule read_lengths_plot:
+    input:
+        reads = "{sample_name}.fastq" + config["EXTENSION"]["DEDUPLICATED"]
+
+    params:
+        num_of_bins = 100,
+        std_deviations = 4,
+        read_lengths_script = os.path.join(workflow.basedir,"src/plot_read_lengths.py")
+
+    output:
+        out_plot_name = "{sample_name}" + "_deduplicated_read_lengts_hist.pdf"
+
+    conda:
+        "envs/plots.yaml"
+    envmodules:
+        "python/3.8"
+
+    shell:
+        """
+        python3 {params.read_lengths_script} -i {input.reads} -s {params.std_deviations} -b {params.num_of_bins} \
+            -o {output.out_plot_name} --title {wildcards.sample_name}_deduplicated
+        """
+
+rule violin_plots_notebook:
+    input:
+        "config.ini",
+        expand("{sample_name}.fastq{ext}",sample_name=SAMPLES,ext=EXTS)
+
+    output:
+        out_plot_name = "violin_plot_all_samples.pdf"
+
+    conda:
+        "envs/plots.yaml"
+    envmodules:
+        "python/3.8"
+
+    notebook:
+        "src/plots_notebooks/violin_plots.py.ipynb"
 
 ############################################################
 ## Databases
@@ -317,11 +362,7 @@ rule get_KEGG_Prokaryotes_DBs:
 rule clean:
     shell:
         """
-        rm -rf {databases_dir} {tmp_dir} 
-        """
-
-rule clean_sam_files:
-    shell:
-        """
-        rm -rf *.sam
+        rm -f *.csv *.sam *.json *.pdf *_deduplicated.fastq
+        rm -rf {databases_dir} {tmp_dir}
+        rm -f config.ini
         """
