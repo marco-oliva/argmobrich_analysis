@@ -1,0 +1,40 @@
+{
+
+    "__default__": {
+        "account": "boucher",
+        "qos": "boucher",
+        "cpus-per-task": "2",
+        "Nodes": 1,
+        "mem": "64gb",
+        "runtime": "168:00:00",
+        "jobname": "TLS-job",
+        "mail": "marco.oliva@ufl.edu",
+        "mail_type": "NONE",
+        "out": "logs/%j.log",
+        "err": "logs/%j.log"
+    },
+
+    "deduplicate_reads":
+    {
+        "cpus-per-task": "32",
+        "mem": "120gb"
+    },
+
+    "align_to_megares":
+    {
+        "cpus-per-task": "32",
+        "mem": "120gb"
+    },
+
+    "align_to_mges":
+    {
+        "cpus-per-task": "32",
+        "mem": "120gb"
+    },
+
+    "align_to_kegg":
+    {
+        "cpus-per-task": "32",
+        "mem": "120gb"
+    }
+}

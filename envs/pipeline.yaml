@@ -4,3 +4,5 @@ dependencies:
   - python=3.8
   - biopython
   - pysam
+  - scipy
+  - scikit-learn

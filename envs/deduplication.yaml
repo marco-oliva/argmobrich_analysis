@@ -4,3 +4,5 @@ channels:
 dependencies:
   - python=3.8
   - blat
+  - scipy
+  - scikit-learn
