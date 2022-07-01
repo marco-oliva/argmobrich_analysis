@@ -53,11 +53,11 @@ rule deduplicate_reads:
 
     params:
         num_of_clusters = config["MISC"]["DEDUP_CLUSTERS"],
-        tmp_dir_clusters = tmp_dir,
+        tmp_dir_clusters = os.path.join(tmp_dir, "tmp_{sample_name}"),
         find_duplicates_script = os.path.join(workflow.basedir, config["SCRIPTS"]["FIND_DUPLICATES"]),
         deduplicate_script = os.path.join(workflow.basedir, config["SCRIPTS"]["DEDUPLICATE"]),
         read_lengths_script = os.path.join(workflow.basedir, config["SCRIPTS"]["READS_LENGTHS"]),
-        tmp_dir = tmp_dir
+        tmp_dir = os.path.join(tmp_dir, "tmp_{sample_name}")
 
     conda:
         "envs/deduplication.yaml"
