@@ -68,6 +68,26 @@ rule read_lengths:
         python3 {params.read_lengths_script} {input.reads} > {output.read_lenghts_json}
         """
 
+rule read_lengths_from_workdir:
+    input:
+        reads = "{sample_name}.fastq"
+
+    params:
+        read_lengths_script = workflow.basedir + "/" + config["SCRIPTS"]["READS_LENGTH"]
+
+    conda:
+        "envs/deduplication.yaml"
+    envmodules:
+        "python/3.8"
+
+    output:
+        read_lenghts_json = "{sample_name}.fastq" + config["EXTENSION"]["READS_LENGTH"]
+
+    shell:
+        """
+        python3 {params.read_lengths_script} {input.reads} > {output.read_lenghts_json}
+        """
+
 ############################################################
 # Deduplication
 
@@ -267,8 +287,8 @@ rule pass_config_file:
         import configparser
         with open(output.out_config_file,'w') as configfile_out:
             config_to_pass = dict(config)
-            config_to_pass["DATABASE"]["MEGARES"] = os.path.join(databases_dir,"megares_full_database_v2.00.fasta")
-            config_to_pass["DATABASE"]["MEGARES_ONTOLOGY"] = os.path.join(databases_dir,"megares_full_annotations_v2.00.csv")
+            config_to_pass["DATABASE"]["MEGARES"] = databases_dir + "/" + "megares_full_database_v2.00.fasta"
+            config_to_pass["DATABASE"]["MEGARES_ONTOLOGY"] = databases_dir + "/" + "megares_full_annotations_v2.00.csv"
             config_parser = configparser.ConfigParser()
             config_parser.read_dict(config_to_pass)
             config_parser.write(configfile_out)
