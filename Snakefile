@@ -23,6 +23,7 @@ tmp_dir = "tmp"
 
 SAMPLES, = glob_wildcards("samples/{sample_name}.fastq")
 EXTS = [
+    config["EXTENSION"]["DEDUPLICATED"] + config["EXTENSION"]["READS_LENGTHS"],
     config["EXTENSION"]["DEDUPLICATED"] + config["EXTENSION"]["COLOCALIZATIONS"],
     config["EXTENSION"]["DEDUPLICATED"] + config["EXTENSION"]["COLOCALIZATIONS_RICHNESS"],
     config["EXTENSION"]["DEDUPLICATED"] + "_" + config["MISC"]["RESISTOME_STRATEGY"] + config["EXTENSION"]["RESISTOME_RICHNESS"],
@@ -45,42 +46,137 @@ rule all:
 ############################################################
 
 ############################################################
-# Deduplication
+# Utils
 
-rule deduplicate_reads:
+rule read_lengths:
     input:
         reads = "samples/{sample_name}.fastq"
 
     params:
-        num_of_clusters = config["MISC"]["DEDUP_CLUSTERS"],
-        tmp_dir_clusters = os.path.join(tmp_dir, "tmp_{sample_name}"),
-        find_duplicates_script = os.path.join(workflow.basedir, config["SCRIPTS"]["FIND_DUPLICATES"]),
-        deduplicate_script = os.path.join(workflow.basedir, config["SCRIPTS"]["DEDUPLICATE"]),
-        read_lengths_script = os.path.join(workflow.basedir, config["SCRIPTS"]["READS_LENGTHS"]),
-        tmp_dir = os.path.join(tmp_dir, "tmp_{sample_name}")
+        read_lengths_script = workflow.basedir + "/" + config["SCRIPTS"]["READS_LENGTHS"]
 
     conda:
         "envs/deduplication.yaml"
     envmodules:
-        "python/3.8",
-        "blat/20140318"
-
-    threads: config["MISC"]["DEDUP_THREADS"]
+        "python/3.8"
 
     output:
-        duplicates_csv = os.path.join(tmp_dir, "{sample_name}.fastq" + config["EXTENSION"]["DUPLICATES"]),
-        sample_name = "{sample_name}.fastq" + config["EXTENSION"]["DEDUPLICATED"],
-        reads_lenght = "{sample_name}.fastq" + config["EXTENSION"]["READS_LENGTH"],
-        dedup_reads_lenght = "{sample_name}.fastq" + config["EXTENSION"]["DEDUPLICATED"] + config["EXTENSION"]["READS_LENGTH"]
+        read_lenghts_json = "{sample_name}.fastq" + config["EXTENSION"]["READS_LENGTH"]
 
     shell:
         """
-        mkdir -p {params.tmp_dir}
-        python3 {params.find_duplicates_script} -r {input.reads} -o {params.tmp_dir_clusters} \
-            -n {params.num_of_clusters} -t {threads} -b blat > {output.duplicates_csv}
-        python3 {params.deduplicate_script} -r {input.reads} -d {output.duplicates_csv} > {output.sample_name}
-        python3 {params.read_lengths_script} {input.reads} > {output.reads_lenght}
-        python3 {params.read_lengths_script} {output.sample_name} > {output.dedup_reads_lenght}
+        python3 {params.read_lengths_script} {input.reads} > {output.read_lenghts_json}
+        """
+
+############################################################
+# Deduplication
+
+rule deduplicate_create_clusters:
+    input:
+        reads = "samples/{sample_name}.fastq",
+        reads_lengths = "{sample_name}.fastq" + config["EXTENSION"]["READS_LENGTH"]
+
+    params:
+        num_of_clusters = config["MISC"]["DEDUP_CLUSTERS"],
+        clustering_script = workflow.basedir + "/" + config["SCRIPTS"]["CLUSTER_READS"],
+        tmp_dir_clusters = tmp_dir + "/tmp_{sample_name}"
+
+    conda:
+        "envs/deduplication.yaml"
+    envmodules:
+        "python/3.8"
+
+    output:
+        clusters = [tmp_dir + "/tmp_{{sample_name}}/{{sample_name}}_{cl_id}.fasta.gz".format(cl_id=cl_id)
+                        for cl_id in range(config["MISC"]["DEDUP_CLUSTERS"])]
+
+    shell:
+        """
+        mkdir -p {params.tmp_dir_clusters}
+        python3 {params.clustering_script} -r {input.reads} -o {params.tmp_dir_clusters} \
+            -n {params.num_of_clusters} -l {input.reads_lengths}
+        """
+
+rule deduplicate_blat:
+    input:
+        reads_cluster = tmp_dir + "/tmp_{sample_name}/{sample_name}_{cl_id}.fasta.gz"
+
+    params:
+        out_pls_dir = tmp_dir + "/tmp_{sample_name}/pls_files"
+
+    threads: config["MISC"]["BLAT_THREADS"]
+
+    conda:
+        "envs/deduplication.yaml"
+    envmodules:
+        "blat/20140318"
+
+    output:
+        out_pls = tmp_dir + "/tmp_{sample_name}/pls_files/{cl_id}.pls"
+
+    shell:
+        """
+        mkdir -p {params.out_pls_dir}
+        blat {input.reads_cluster} {input.reads_cluster} {output.out_pls}
+        """
+
+rule deduplicate_find_duplicates:
+    input:
+        pls_file = tmp_dir + "/tmp_{sample_name}/pls_files/{cl_id}.pls"
+
+    params:
+        find_duplicates_script = workflow.basedir + "/" + config["SCRIPTS"]["FIND_DUPLICATES"],
+        similarity_threshold = config["MISC"]["DEDUPLICATION_SIMILARITY_THRESHOLD"]
+
+    conda:
+        "envs/deduplication.yaml"
+    envmodules:
+        "python/3.8"
+
+    output:
+        out_duplicates_csv = tmp_dir + "/tmp_{sample_name}/pls_files/{cl_id}_duplicates.csv"
+
+    shell:
+        """
+        python3 {params.find_duplicates_script} -p {input.pls_file} -s {params.similarity_threshold} > {output.out_duplicates_csv}
+        """
+
+rule deduplicate_merge_duplicates_sets:
+    input:
+        expand(tmp_dir + "/tmp_{{sample_name}}/pls_files/{cl_id}_duplicates.csv", cl_id=range(config["MISC"]["DEDUP_CLUSTERS"]))
+
+    output:
+        out_duplicates_csv = tmp_dir + "/tmp_{sample_name}/merged_duplicates.csv"
+
+    run:
+        import csv
+        with open(output[0], "w") as out_csv_handle:
+            csv_writer = csv.writer(out_csv_handle)
+            for cluster_duplicate_file in input:
+                with open(cluster_duplicate_file) as csv_handle:
+                    csv_reader = csv.reader(csv_handle)
+                    for row in csv_reader:
+                        csv_writer.writerow(row)
+
+rule deduplicate:
+    input:
+        reads = "samples/{sample_name}.fastq",
+        duplicates_csv = tmp_dir + "/tmp_{sample_name}/merged_duplicates.csv"
+
+    params:
+        deduplicate_script = workflow.basedir + "/" +config["SCRIPTS"]["DEDUPLICATE"]
+
+    conda:
+        "envs/deduplication.yaml"
+    envmodules:
+        "python/3.8"
+
+    output:
+        deduplicated_reads = "{sample_name}.fastq" + config["EXTENSION"]["DEDUPLICATED"]
+
+    shell:
+        """
+        python3 {params.deduplicate_script} -r {input.reads} -d {input.duplicates_csv} > {output.deduplicated_reads}
         """
 
 ############################################################s

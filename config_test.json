@@ -38,6 +38,8 @@
     "GLOBAL_KEGG_THRESHOLD_COLOCALIZATIONS" : 0.5,
     "DEDUP_CLUSTERS" : 200,
     "DEDUP_THREADS" : 12,
+    "BLAT_THREADS" : 4,
+    "DEDUPLICATION_SIMILARITY_THRESHOLD" : 0.9,
     "RESISTOME_STRATEGY" : "SHORT",
     "MOBILOME_STRATEGY" : "SHORT",
     "USE_SECONDARY_ALIGNMENTS" : "True"
@@ -55,7 +57,8 @@
   "SCRIPTS" :
   {
     "BASE_PATH" : "",
-    "FIND_DUPLICATES" : "src/find_duplicates.py",
+    "CLUSTER_READS" : "src/cluster_reads_by_read_length.py",
+    "FIND_DUPLICATES" : "src/find_duplicates_in_cluster.py",
     "DEDUPLICATE" : "src/deduplicate.py",
     "GEN_MOBILOME" : "src/gen_mobilome.py",
     "GEN_RESISTOME" : "src/gen_resistome.py",

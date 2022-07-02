@@ -1,20 +1,13 @@
 #!/usr/bin/env python3
 
-import argparse
-from Bio import SeqIO
-import statistics
 import json
-from scipy.stats import kurtosis
-from scipy.stats import skew
-import gzip
+from Bio import SeqIO
 from common import *
 
 def main():
     parser = argparse.ArgumentParser(description='Get reads lengths from reads file')
     parser.add_argument('input', help='Input Fastq file')
     args = parser.parse_args()
-
-    TELS_statistics = dict()
 
     file_path = args.input
     if is_gz_file(file_path):
