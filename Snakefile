@@ -23,7 +23,7 @@ tmp_dir = "tmp"
 
 SAMPLES, = glob_wildcards("samples/{sample_name}.fastq")
 EXTS = [
-    config["EXTENSION"]["DEDUPLICATED"] + config["EXTENSION"]["READS_LENGTHS"],
+    config["EXTENSION"]["DEDUPLICATED"] + config["EXTENSION"]["READS_LENGTH"],
     config["EXTENSION"]["DEDUPLICATED"] + config["EXTENSION"]["COLOCALIZATIONS"],
     config["EXTENSION"]["DEDUPLICATED"] + config["EXTENSION"]["COLOCALIZATIONS_RICHNESS"],
     config["EXTENSION"]["DEDUPLICATED"] + "_" + config["MISC"]["RESISTOME_STRATEGY"] + config["EXTENSION"]["RESISTOME_RICHNESS"],
@@ -53,7 +53,7 @@ rule read_lengths:
         reads = "samples/{sample_name}.fastq"
 
     params:
-        read_lengths_script = workflow.basedir + "/" + config["SCRIPTS"]["READS_LENGTHS"]
+        read_lengths_script = workflow.basedir + "/" + config["SCRIPTS"]["READS_LENGTH"]
 
     conda:
         "envs/deduplication.yaml"
@@ -185,7 +185,7 @@ rule deduplicate:
 rule align_to_megares:
     input:
         reads = "{sample_name}.fastq" + config["EXTENSION"]["DEDUPLICATED"],
-        megares_v2_seqs = os.path.join(databases_dir,"megares_full_database_v2.00.fasta")
+        megares_v2_seqs = databases_dir + "/" + "megares_full_database_v2.00.fasta"
 
     params:
         minimap_flags = config["MINIMAP2"]["ALIGNER_PB_OPTION"] + " "
@@ -211,7 +211,7 @@ rule align_to_megares:
 rule align_to_mges:
     input:
         reads = "{sample_name}.fastq" + config["EXTENSION"]["DEDUPLICATED"],
-        mges_database = os.path.join(databases_dir, "mges_combined.fa")
+        mges_database = databases_dir + "/" + "mges_combined.fa"
     params:
         minimap_flags = config["MINIMAP2"]["ALIGNER_PB_OPTION"] + " "
                         + config["MINIMAP2"]["ALIGNER_ONT_OPTION"] + " "
@@ -236,7 +236,7 @@ rule align_to_mges:
 rule align_to_kegg:
     input:
         reads = "{sample_name}.fastq" + config["EXTENSION"]["DEDUPLICATED"],
-        kegg_database = os.path.join(databases_dir, "kegg_genes.fa")
+        kegg_database = databases_dir + "/" + "kegg_genes.fa"
 
     params:
         minimap_flags = config["MINIMAP2"]["ALIGNER_PB_OPTION"] + " "
@@ -282,7 +282,7 @@ rule resisome_and_mobilome:
         config_file = "config.ini"
 
     params:
-        resistome_mobilome_script = os.path.join(workflow.basedir, config["SCRIPTS"]["GEN_RESISTOME_AND_MOBILOME"]),
+        resistome_mobilome_script = workflow.basedir + "/" + config["SCRIPTS"]["GEN_RESISTOME_AND_MOBILOME"],
         output_prefix = "{sample_name}.fastq" + config["EXTENSION"]["DEDUPLICATED"]
 
     conda:
@@ -318,7 +318,7 @@ rule find_colocalizations:
         config_file = "config.ini"
 
     params:
-        find_colocalizations_script = os.path.join(workflow.basedir, config["SCRIPTS"]["FIND_COLOCALIZATIONS"]),
+        find_colocalizations_script = workflow.basedir + "/" + config["SCRIPTS"]["FIND_COLOCALIZATIONS"],
         output_directory = os.getcwd()
 
     conda:
@@ -347,7 +347,7 @@ rule colocalization_richness:
         config_file = "config.ini"
 
     params:
-        find_colocalizations_script = os.path.join(workflow.basedir, config["SCRIPTS"]["COLOCALIZATIONS_RICHNESS"])
+        find_colocalizations_script = workflow.basedir + "/" + config["SCRIPTS"]["COLOCALIZATIONS_RICHNESS"]
 
     conda:
         "envs/pipeline.yaml"
@@ -377,7 +377,7 @@ rule read_lengths_plot:
     params:
         num_of_bins = 100,
         std_deviations = 4,
-        read_lengths_script = os.path.join(workflow.basedir,"src/plot_read_lengths.py")
+        read_lengths_script = workflow.basedir + "/" + "src/plot_read_lengths.py"
 
     output:
         out_plot_name = "{sample_name}" + "_deduplicated_read_lengts_hist.pdf"
