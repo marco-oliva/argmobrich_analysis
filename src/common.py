@@ -127,6 +127,43 @@ def read_megares_ontology(config):
                                         }
     return megares_ontology, hierarchy_dict
 
+# Input: config
+def read_megares_v2_ontology(config):
+    # Create ontology dictionary from MEGARes ontology file
+    megares_ontology = dict()
+    hierarchy_dict = dict()
+    with open(config['DATABASE']['MEGARES_ONTOLOGY'], 'r') as ontology_tsv:
+        ontology_reader = csv.reader(ontology_tsv)
+        for row in ontology_reader:
+            # Skip column names
+            if row[0] == "header":
+                continue
+
+            typ = row[1]
+            cl = row[2]
+            mech = row[3]
+            group = row[4]
+
+            # Set up hiearachy dict. This will be our tree structure
+            if not typ in hierarchy_dict:
+                hierarchy_dict[typ] = {}
+
+            if not cl in hierarchy_dict[typ]:
+                hierarchy_dict[typ][cl] = {}
+
+            if not mech in hierarchy_dict[typ][cl]:
+                hierarchy_dict[typ][cl][mech] = []
+
+            if not group in hierarchy_dict[typ][cl][mech]:
+                hierarchy_dict[typ][cl][mech].append(group)
+
+            # FIll in our dict
+            megares_ontology[row[0]] = {"class": cl,
+                                        "mechanism": mech,
+                                        "group": group,
+                                        "type": typ
+                                        }
+    return megares_ontology, hierarchy_dict
 
 def reads_statistics(read_sets, read_lengths_dict):
     read_lengths = list()

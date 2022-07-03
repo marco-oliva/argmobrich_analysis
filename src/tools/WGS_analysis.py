@@ -155,7 +155,7 @@ def read_sam(file_name, genes_lengths, threshold, gene_type='unknown'):
 
 
 def gen_resistome(config, organism_name, genes_list):
-    megares_ontology, _ = read_megares_ontology(config)
+    megares_ontology, _ = read_megares_v2_ontology(config)
 
     gene_dict = {}
     class_dict = {}

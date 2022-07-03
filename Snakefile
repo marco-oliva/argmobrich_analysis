@@ -416,8 +416,13 @@ rule read_lengths_plot:
 
 rule violin_plots_notebook:
     input:
-        "config.ini",
-        expand("{sample_name}.fastq{ext}",sample_name=SAMPLES,ext=EXTS)
+        megares_db = databases_dir + "/megares_full_database_v2.00.fasta",
+        megares_annotation = databases_dir + "/megares_full_annotations_v2.00.csv",
+        data = expand("{sample_name}.fastq{ext}",sample_name=SAMPLES,ext=EXTS)
+
+    params:
+        samples_list = SAMPLES,
+        config_dict  = config,
 
     output:
         out_plot_name = "violin_plot_all_samples.pdf"
@@ -428,7 +433,7 @@ rule violin_plots_notebook:
         "python/3.8"
 
     notebook:
-        "src/plots_notebooks/violin_plots.py.ipynb"
+        "src/plots_notebooks/violin_notebook.py.ipynb"
 
 ############################################################
 ## Databases

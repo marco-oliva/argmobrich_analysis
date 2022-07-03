@@ -21,7 +21,7 @@ def long_reads_strategy_resistome(config):
     sam_file = pysam.AlignmentFile(config['INPUT']['ARGS_SAM_FILE'], 'r')
 
     # Create ontology dictionary from MEGARes ontology file
-    megares_ontology, _ = read_megares_ontology(config)
+    megares_ontology, _ = read_megares_v2_ontology(config)
 
     # Get reads lengths
     reads_lengths = dict()
@@ -138,7 +138,7 @@ def short_reads_strategy_resistome(config):
     sam_file = pysam.AlignmentFile(config['INPUT']['ARGS_SAM_FILE'], 'r')
 
     # Create ontology dictionary from MEGARes ontology file
-    megares_ontology, _ = read_megares_ontology(config)
+    megares_ontology, _ = read_megares_v2_ontology(config)
 
     reads_lengths = dict()
     with open(config['OUTPUT']['OUT_DIR'] + '/' + config['INPUT']['INPUT_FILE_NAME_EXT'] + config['EXTENSION']['READS_LENGTH'], 'rt') as reads_lengths_json_fp:

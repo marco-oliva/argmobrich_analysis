@@ -70,7 +70,7 @@ def main():
     root_logger = init_logger()
 
     #Create ontology dictionary from MEGARes ontology file
-    megares_ontology, _ = read_megares_ontology(config)
+    megares_ontology, _ = read_megares_v2_ontology(config)
 
     colocs = []
     coloc_counts = {}
