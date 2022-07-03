@@ -64,12 +64,9 @@ rule read_lengths:
     output:
         read_lenghts_json = "{sample_name}.fastq" + config["EXTENSION"]["READS_LENGTH"]
 
-    log:
-        "logs/{sample_name}:read_lengths.log"
-
     shell:
         """
-        python3 {params.read_lengths_script} {input.reads} > {output.read_lenghts_json} 2> {log}
+        python3 {params.read_lengths_script} {input.reads} > {output.read_lenghts_json}
         """
 
 rule read_lengths_from_workdir:
@@ -87,12 +84,9 @@ rule read_lengths_from_workdir:
     output:
         read_lenghts_json = "{sample_name}.fastq" + config["EXTENSION"]["READS_LENGTH"]
 
-    log:
-        "logs/{sample_name}:read_lengths_workdir.log"
-
     shell:
         """
-        python3 {params.read_lengths_script} {input.reads} > {output.read_lenghts_json} 2> {log}
+        python3 {params.read_lengths_script} {input.reads} > {output.read_lenghts_json}
         """
 
 ############################################################
