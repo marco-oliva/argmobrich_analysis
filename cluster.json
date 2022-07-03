@@ -3,10 +3,10 @@
     "__default__": {
         "account": "boucher",
         "qos": "boucher",
-        "cpus-per-task": "2",
+        "cpus-per-task": "1",
         "Nodes": 1,
-        "mem": "64gb",
-        "runtime": "168:00:00",
+        "mem": "32gb",
+        "runtime": "72:00:00",
         "jobname": "TLS-job",
         "mail": "marco.oliva@ufl.edu",
         "mail_type": "NONE",
