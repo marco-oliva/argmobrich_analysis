@@ -14,6 +14,7 @@
   {
     "DUPLICATES" : "_duplicates.csv",
     "DEDUPLICATED" : "_deduplicated.fastq",
+    "NOT_DEDUPLICATED" : "_NOT_deduplicated.fastq",
     "A_TO_MEGARES" : "_ato_megaresv2.sam",
     "A_TO_MGES" : "_ato_MGES.sam",
     "A_TO_KEGG" : "_ato_KEGG.sam",
