@@ -422,7 +422,7 @@ rule violin_plots_notebook:
 
     params:
         samples_list = SAMPLES,
-        config_dict  = config,
+        config_dict  = config
 
     output:
         out_plot_name = "violin_plot_all_samples.pdf"
@@ -434,6 +434,29 @@ rule violin_plots_notebook:
 
     notebook:
         "src/plots_notebooks/violin_notebook.py.ipynb"
+
+rule colocalization_visualizations_notebook:
+    input:
+        megares_db = databases_dir + "/megares_full_database_v2.00.fasta",
+        megares_annotation = databases_dir + "/megares_full_annotations_v2.00.csv",
+        mges_db = databases_dir + "/mges_combined.fa",
+        kegg_db = databases_dir + "/kegg_genes.fa",
+        dedup_reads_lenght = "{sample_name}.fastq" + config["EXTENSION"]["DEDUPLICATED"] + config["EXTENSION"]["READS_LENGTH"],
+        colocalizations = "{sample_name}.fastq" + config["EXTENSION"]["DEDUPLICATED"] + config["EXTENSION"]["COLOCALIZATIONS"]
+
+    params:
+        config_dict  = config
+
+    output:
+        out_plot_name = "{sample_name}_colocalizations_plot.pdf"
+
+    conda:
+        "envs/plots.yaml"
+    envmodules:
+        "python/3.8"
+
+    notebook:
+        "src/plots_notebooks/colocalizations_notebook.py.ipynb"
 
 ############################################################
 ## Databases
