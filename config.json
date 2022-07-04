@@ -37,11 +37,12 @@
     "GLOBAL_MGE_THRESHOLD_COLOCALIZATIONS" : 0.5,
     "GLOBAL_KEGG_THRESHOLD_COLOCALIZATIONS" : 0.5,
     "DEDUP_CLUSTERS" : 200,
-    "BLAT_THREADS" : 8,
+    "BLAT_THREADS" : 4,
     "DEDUPLICATION_SIMILARITY_THRESHOLD" : 0.9,
     "RESISTOME_STRATEGY" : "SHORT",
     "MOBILOME_STRATEGY" : "SHORT",
-    "USE_SECONDARY_ALIGNMENTS" : "True"
+    "USE_SECONDARY_ALIGNMENTS" : "True",
+    "MAX_BP_COLOCALIZATIONS_PLOT" : 5000
   },
 
   "MINIMAP2" :
@@ -59,8 +60,6 @@
     "CLUSTER_READS" : "src/cluster_reads_by_read_length.py",
     "FIND_DUPLICATES" : "src/find_duplicates_in_cluster.py",
     "DEDUPLICATE" : "src/deduplicate.py",
-    "GEN_MOBILOME" : "src/gen_mobilome.py",
-    "GEN_RESISTOME" : "src/gen_resistome.py",
     "GEN_RESISTOME_AND_MOBILOME" : "src/gen_resistome_and_mobilome.py",
     "FIND_COLOCALIZATIONS" : "src/find_colocalizations.py",
     "COLOCALIZATIONS_RICHNESS" : "src/colocalization_richness.py",
@@ -70,12 +69,6 @@
   "STATS" :
   {
     "GET_STATS" : "True"
-  },
-
-  "CONTAINERS" :
-  {
-    "MINIMAP2" : "quay.io/biocontainers/minimap2",
-    "BLAT" : "quay.io/biocontainers/ucsc-blat"
   }
 }
 

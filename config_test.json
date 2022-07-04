@@ -69,12 +69,6 @@
   "STATS" :
   {
     "GET_STATS" : "True"
-  },
-
-  "CONTAINERS" :
-  {
-    "MINIMAP2" : "quay.io/biocontainers/minimap2",
-    "BLAT" : "quay.io/biocontainers/ucsc-blat"
   }
 }
 
