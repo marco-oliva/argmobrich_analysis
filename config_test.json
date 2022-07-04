@@ -14,6 +14,7 @@
   {
     "DUPLICATES" : "_duplicates.csv",
     "DEDUPLICATED" : "_deduplicated.fastq",
+    "NOT_DEDUPLICATED" : "_NOT_deduplicated.fastq",
     "A_TO_MEGARES" : "_ato_megaresv2.sam",
     "A_TO_MGES" : "_ato_MGES.sam",
     "A_TO_KEGG" : "_ato_KEGG.sam",
@@ -36,6 +37,7 @@
     "GLOBAL_AMR_THRESHOLD_COLOCALIZATIONS" : 0.8,
     "GLOBAL_MGE_THRESHOLD_COLOCALIZATIONS" : 0.5,
     "GLOBAL_KEGG_THRESHOLD_COLOCALIZATIONS" : 0.5,
+    "DEDUPLICATE" : "True",
     "DEDUP_CLUSTERS" : 200,
     "BLAT_THREADS" : 4,
     "DEDUPLICATION_SIMILARITY_THRESHOLD" : 0.9,
