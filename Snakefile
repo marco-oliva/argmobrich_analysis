@@ -308,7 +308,7 @@ rule pass_config_file:
             config_parser.read_dict(config_to_pass)
             config_parser.write(configfile_out)
 
-rule resisome_and_mobilome:
+rule resistome_and_mobilome:
     input:
         megares_sam = "{sample_name}.fastq" + DEDUP_STRING + config["EXTENSION"]["A_TO_MEGARES"],
         mges_sam = "{sample_name}.fastq" + DEDUP_STRING + config["EXTENSION"]["A_TO_MGES"],
