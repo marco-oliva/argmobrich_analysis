@@ -11,12 +11,15 @@ Create the environment for `telseq` and install snakemake.
 ```bash
 conda create -c conda-forge -n mamba_base mamba
 conda activate mamba_base
-mamba create -c conda-forge -c bioconda -n telseq snakemake
+mamba create -c conda-forge -c bioconda -n telseq snakemake git git-lfs
+mamba activate telseq
 ```
 
 Clone the repository.
 
 ```bash
+mamba activate telseq
+git lfs install
 git clone https://github.com/marco-oliva/argmobrich_analysis.git
 ```
 
