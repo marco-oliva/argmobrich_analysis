@@ -29,6 +29,7 @@ The `telseq` workflows assumes that the `fastq` files will be stored in a direct
 
 ```bash
 cd argmobrich_analysis
+mamba activate telseq
 
 # Create the directories structure
 mkdir -p work_dir/samples work_dir/logs 
