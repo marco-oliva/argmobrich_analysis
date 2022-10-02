@@ -1,6 +1,6 @@
 # Target-enriched long-read sequencing (TELSeq) contextualizes antibiotic resistance in microbiomes.
 
-This repository contains the scripts used to perform the analysis descrived in the *Bioinformatics Analysis* section. 
+This repository contains the scripts used to perform the analysis described in the *Bioinformatics Analysis* section of the paper. 
 
 ### Snakemake pipeline: [`telseq`](https://github.com/marco-oliva/telseq)
 
