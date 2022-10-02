@@ -1,10 +1,21 @@
-# Target-enriched long-read sequencing (TELS) contextualizes antibiotic resistance in microbiomes 
+# Target-enriched long-read sequencing (TELSeq) contextualizes antibiotic resistance in microbiomes.
 
-This repository contains the scripts used to perform the analysis descrived in the *Bioinformatics Analysis* section.
+This repository contains the scripts used to perform the analysis descrived in the *Bioinformatics Analysis* section. 
+
+### Snakemake pipeline: [`telseq`](https://github.com/marco-oliva/telseq)
+
+A Snakemake pipeline based on the scripts contained in this repostiory is available here: [https://github.com/marco-oliva/telseq](https://github.com/marco-oliva/telseq).
+
+[`telseq`](https://github.com/marco-oliva/telseq) is currently better supported and will be extended with additional features.
+
+---
 
 ### Requirements
 
+In order to run the scripts the following requirements are needed:
+
 - python3
+- pip
 
 ### Install
 
